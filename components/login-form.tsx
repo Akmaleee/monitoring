@@ -1,0 +1,525 @@
+// Lokasi: components/login-form.tsx
+
+"use client";
+
+import { useState } from "react";
+import Cookies from 'js-cookie';
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+export function LoginForm({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  const [username, setUsername] = useState("rinjani.putri"); // Default value for easier testing
+  const [password, setPassword] = useState("Putrijani1910@"); // Default value for easier testing
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // PERUBAHAN 1: URL dan path API disesuaikan
+      const response = await fetch("http://127.0.0.1:3000/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const responseData = await response.json();
+
+      // PERUBAHAN 2: Cek token dari dalam objek `data`
+      if (!response.ok || !responseData.data.token) {
+        throw new Error(responseData.message || "Username atau password salah");
+      }
+
+      // PERUBAHAN 3: Ambil token dari `responseData.data.token`
+      Cookies.set('auth_token', responseData.data.token, { secure: true, sameSite: 'strict' });
+
+      // Arahkan ke halaman bare-metal setelah login berhasil
+      window.location.href = "/bare-metal"; 
+
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Login to your account</CardTitle>
+          <CardDescription>
+            Enter your username and password below to login.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit}>
+            <div className="flex flex-col gap-6">
+              <div className="grid gap-3">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="yourid"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="grid gap-3">
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
+
+              {error && (
+                <p className="text-sm font-medium text-red-500">{error}</p>
+              )}
+
+              <div className="flex flex-col gap-3">
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Logging in..." : "Login"}
+                </Button>
+              </div>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// "use client";
+
+// import { useState } from "react";
+// import Cookies from 'js-cookie';
+// import { cn } from "@/lib/utils";
+// import { Button } from "@/components/ui/button";
+// import {
+//   Card,
+//   CardContent,
+//   CardDescription,
+//   CardHeader,
+//   CardTitle,
+// } from "@/components/ui/card";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+
+// export function LoginForm({
+//   className,
+//   ...props
+// }: React.ComponentProps<"div">) {
+//   const [username, setUsername] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [error, setError] = useState<string | null>(null);
+//   const [isLoading, setIsLoading] = useState(false);
+
+//   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+//     event.preventDefault();
+//     setIsLoading(true);
+//     setError(null);
+
+//     try {
+//       const response = await fetch("http://localhost:5000/api/login", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ username, password }),
+//       });
+
+//       const data = await response.json();
+
+//       if (!response.ok || !data.token) {
+//         throw new Error(data.message || "Username atau password salah");
+//       }
+
+//       Cookies.set('auth_token', data.token, { secure: true, sameSite: 'strict' });
+
+//       window.location.href = "/dashboard";
+
+//     } catch (err: any) {
+//       setError(err.message);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className={cn("flex flex-col gap-6", className)} {...props}>
+//       <Card>
+//         <CardHeader>
+//           <CardTitle>Login to your account</CardTitle>
+//           <CardDescription>
+//             Enter your username and password below to login.
+//           </CardDescription>
+//         </CardHeader>
+//         <CardContent>
+//           <form onSubmit={handleSubmit}>
+//             <div className="flex flex-col gap-6">
+//               <div className="grid gap-3">
+//                 <Label htmlFor="username">Username</Label>
+//                 <Input
+//                   id="username"
+//                   type="text"
+//                   placeholder="yourid"
+//                   required
+//                   value={username}
+//                   onChange={(e) => setUsername(e.target.value)}
+//                   disabled={isLoading}
+//                 />
+//               </div>
+//               <div className="grid gap-3">
+//                 <div className="flex items-center">
+//                   <Label htmlFor="password">Password</Label>
+//                 </div>
+//                 <Input
+//                   id="password"
+//                   type="password"
+//                   required
+//                   value={password}
+//                   onChange={(e) => setPassword(e.target.value)}
+//                   disabled={isLoading}
+//                 />
+//               </div>
+
+//               {error && (
+//                 <p className="text-sm font-medium text-red-500">{error}</p>
+//               )}
+
+//               <div className="flex flex-col gap-3">
+//                 <Button type="submit" className="w-full" disabled={isLoading}>
+//                   {isLoading ? "Logging in..." : "Login"}
+//                 </Button>
+//               </div>
+//             </div>
+//           </form>
+//         </CardContent>
+//       </Card>
+//     </div>
+//   );
+// }
+
+
+// "use client";
+
+// import { useState } from "react";
+// import { useRouter } from "next/navigation";
+// import { cn } from "@/lib/utils";
+// import { Button } from "@/components/ui/button";
+// import {
+//   Card,
+//   CardContent,
+//   CardDescription,
+//   CardHeader,
+//   CardTitle,
+// } from "@/components/ui/card";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+
+// export function LoginForm({
+//   className,
+//   ...props
+// }: React.ComponentProps<"div">) {
+//   const router = useRouter();
+//   const [username, setUsername] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [error, setError] = useState<string | null>(null);
+//   const [isLoading, setIsLoading] = useState(false);
+
+//   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+//     event.preventDefault();
+//     setIsLoading(true);
+//     setError(null);
+
+//     try {
+//       const response = await fetch("http://localhost:5000/api/login", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ username, password }),
+//       });
+
+//       const data = await response.json();
+
+//       if (!response.ok) {
+//         throw new Error(data.message || "Username atau password salah");
+//       }
+
+//       router.push("/dashboard");
+//     } catch (err: any) {
+//       setError(err.message);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className={cn("flex flex-col gap-6", className)} {...props}>
+//       <Card>
+//         <CardHeader>
+//           <CardTitle>Login to your account</CardTitle>
+//           <CardDescription>
+//             Enter your username and password below to login.
+//           </CardDescription>
+//         </CardHeader>
+//         <CardContent>
+//           <form onSubmit={handleSubmit}>
+//             <div className="flex flex-col gap-6">
+//               <div className="grid gap-3">
+//                 <Label htmlFor="username">Username</Label>
+//                 <Input
+//                   id="username"
+//                   type="text"
+//                   placeholder="yourid"
+//                   required
+//                   value={username}
+//                   onChange={(e) => setUsername(e.target.value)}
+//                   disabled={isLoading}
+//                 />
+//               </div>
+//               <div className="grid gap-3">
+//                 <div className="flex items-center">
+//                   <Label htmlFor="password">Password</Label>
+//                 </div>
+//                 <Input
+//                   id="password"
+//                   type="password"
+//                   required
+//                   value={password}
+//                   onChange={(e) => setPassword(e.target.value)}
+//                   disabled={isLoading}
+//                 />
+//               </div>
+
+//               {error && (
+//                 <p className="text-sm font-medium text-red-500">{error}</p>
+//               )}
+
+//               <div className="flex flex-col gap-3">
+//                 <Button type="submit" className="w-full" disabled={isLoading}>
+//                   {isLoading ? "Logging in..." : "Login"}
+//                 </Button>
+//               </div>
+//             </div>
+//           </form>
+//         </CardContent>
+//       </Card>
+//     </div>
+//   );
+// }
+
+// "use client" // WAJIB: Menandai ini sebagai Client Component
+
+// import { useState } from "react"
+// // Mencoba 'next/router' sebagai alternatif
+// import { useRouter } from "next/router" 
+// import { cn } from "@/lib/utils"
+// import { Button } from "@/components/ui/button"
+// import {
+//   Card,
+//   CardContent,
+//   CardDescription,
+//   CardHeader,
+//   CardTitle,
+// } from "@/components/ui/card"
+// import { Input } from "@/components/ui/input"
+// import { Label } from "@/components/ui/label"
+
+// export function LoginForm({
+//   className,
+//   ...props
+// }: React.ComponentProps<"div">) {
+//   // Hook ini sekarang akan berfungsi karena berada di Client Component
+//   const router = useRouter() 
+//   const [username, setUsername] = useState("")
+//   const [password, setPassword] = useState("")
+//   const [error, setError] = useState<string | null>(null)
+//   const [isLoading, setIsLoading] = useState(false)
+
+//   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+//     event.preventDefault()
+//     setIsLoading(true)
+//     setError(null)
+
+//     try {
+//       const response = await fetch("http://localhost:5000/api/login", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ username, password }),
+//       })
+
+//       const data = await response.json()
+
+//       if (!response.ok) {
+//         throw new Error(data.message || "Username atau password salah")
+//       }
+
+//       // Navigasi ke dashboard setelah berhasil login
+//       router.push("/dashboard")
+
+//     } catch (err: any) {
+//       setError(err.message)
+//     } finally {
+//       setIsLoading(false)
+//     }
+//   }
+
+//   return (
+//     <div className={cn("flex flex-col gap-6", className)} {...props}>
+//       <Card>
+//         <CardHeader>
+//           <CardTitle>Login to your account</CardTitle>
+//           <CardDescription>
+//             Enter your username and password below to login.
+//           </CardDescription>
+//         </CardHeader>
+//         <CardContent>
+//           <form onSubmit={handleSubmit}>
+//             <div className="flex flex-col gap-6">
+//               <div className="grid gap-3">
+//                 <Label htmlFor="username">Username</Label>
+//                 <Input
+//                   id="username"
+//                   type="text"
+//                   placeholder="yourid"
+//                   required
+//                   value={username}
+//                   onChange={(e) => setUsername(e.target.value)}
+//                   disabled={isLoading}
+//                 />
+//               </div>
+//               <div className="grid gap-3">
+//                 <div className="flex items-center">
+//                   <Label htmlFor="password">Password</Label>
+//                 </div>
+//                 <Input
+//                   id="password"
+//                   type="password"
+//                   required
+//                   value={password}
+//                   onChange={(e) => setPassword(e.target.value)}
+//                   disabled={isLoading}
+//                 />
+//               </div>
+
+//               {error && (
+//                 <p className="text-sm font-medium text-red-500">{error}</p>
+//               )}
+
+//               <div className="flex flex-col gap-3">
+//                 <Button type="submit" className="w-full" disabled={isLoading}>
+//                   {isLoading ? "Logging in..." : "Login"}
+//                 </Button>
+//               </div>
+//             </div>
+//           </form>
+//         </CardContent>
+//       </Card>
+//     </div>
+//   )
+// }
+
+
+
+
+
+// import { cn } from "@/lib/utils"
+// import { Button } from "@/components/ui/button"
+// import {
+//   Card,
+//   CardContent,
+//   CardDescription,
+//   CardHeader,
+//   CardTitle,
+// } from "@/components/ui/card"
+// import { Input } from "@/components/ui/input"
+// import { Label } from "@/components/ui/label"
+
+// export function LoginForm({
+//   className,
+//   ...props
+// }: React.ComponentProps<"div">) {
+//   return (
+//     <div className={cn("flex flex-col gap-6", className)} {...props}>
+//       <Card>
+//         <CardHeader>
+//           <CardTitle>Login to your account</CardTitle>
+//           <CardDescription>
+//             Enter your email below to login to your account
+//           </CardDescription>
+//         </CardHeader>
+//         <CardContent>
+//           <form>
+//             <div className="flex flex-col gap-6">
+//               <div className="grid gap-3">
+//                 <Label htmlFor="email">Email</Label>
+//                 <Input
+//                   id="email"
+//                   type=""
+//                   placeholder="yourid"
+//                   required
+//                 />
+//               </div>
+//               <div className="grid gap-3">
+//                 <div className="flex items-center">
+//                   <Label htmlFor="password">Password</Label>
+//                   {/* <a
+//                     href="#"
+//                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+//                   >
+//                     Forgot your password?
+//                   </a> */}
+//                 </div>
+//                 <Input id="password" type="password" required />
+//               </div>
+//               <div className="flex flex-col gap-3">
+//                 <Button type="submit" className="w-full">
+//                   Login
+//                 </Button>
+//                 {/* <Button variant="outline" className="w-full">
+//                   Login with Google
+//                 </Button> */}
+//               </div>
+//             </div>
+//             {/* <div className="mt-4 text-center text-sm">
+//               Don&apos;t have an account?{" "}
+//               <a href="#" className="underline underline-offset-4">
+//                 Sign up
+//               </a>
+//             </div> */}
+//           </form>
+//         </CardContent>
+//       </Card>
+//     </div>
+//   )
+// }
