@@ -1,27 +1,24 @@
-// Lokasi: components/login-form.tsx
-
 "use client";
 
 import { useState } from "react";
 import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode'; // <-- 1. Impor jwtDecode
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
-  const [username, setUsername] = useState("rinjani.putri"); // Default value for easier testing
-  const [password, setPassword] = useState("Putrijani1910@"); // Default value for easier testing
+// Definisikan tipe untuk payload token agar lebih aman
+interface DecodedToken {
+  user: {
+    role: { Role: { name: string } }[];
+  };
+}
+
+export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
+  const [username, setUsername] = useState("rinjani.putri");
+  const [password, setPassword] = useState("Putrijani1910@");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -31,27 +28,33 @@ export function LoginForm({
     setError(null);
 
     try {
-      // PERUBAHAN 1: URL dan path API disesuaikan
       const response = await fetch("http://127.0.0.1:3000/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
       const responseData = await response.json();
 
-      // PERUBAHAN 2: Cek token dari dalam objek `data`
       if (!response.ok || !responseData.data.token) {
         throw new Error(responseData.message || "Username atau password salah");
       }
 
-      // PERUBAHAN 3: Ambil token dari `responseData.data.token`
-      Cookies.set('auth_token', responseData.data.token, { secure: true, sameSite: 'strict' });
+      const token = responseData.data.token;
+      Cookies.set('auth_token', token, { secure: true, sameSite: 'strict' });
+      
+      // -- 2. Decode token dan simpan role --
+      try {
+        const decodedToken = jwtDecode<DecodedToken>(token);
+        // Ambil role pertama, default ke 'user' jika tidak ada
+        const userRole = decodedToken.user?.role?.[0]?.Role?.name || 'user';
+        Cookies.set('user_role', userRole, { secure: true, sameSite: 'strict' });
+      } catch (e) {
+        console.error("Failed to decode token, defaulting to 'user' role.", e);
+        Cookies.set('user_role', 'user', { secure: true, sameSite: 'strict' });
+      }
 
-      // Arahkan ke halaman bare-metal setelah login berhasil
-      window.location.href = "/bare-metal"; 
+      window.location.href = "/dashboard"; 
 
     } catch (err: any) {
       setError(err.message);
@@ -59,6 +62,68 @@ export function LoginForm({
       setIsLoading(false);
     }
   };
+
+// // Lokasi: components/login-form.tsx
+
+// "use client";
+
+// import { useState } from "react";
+// import Cookies from 'js-cookie';
+// import { cn } from "@/lib/utils";
+// import { Button } from "@/components/ui/button";
+// import {
+//   Card,
+//   CardContent,
+//   CardDescription,
+//   CardHeader,
+//   CardTitle,
+// } from "@/components/ui/card";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+
+// export function LoginForm({
+//   className,
+//   ...props
+// }: React.ComponentProps<"div">) {
+//   const [username, setUsername] = useState("rinjani.putri"); // Default value for easier testing
+//   const [password, setPassword] = useState("Putrijani1910@"); // Default value for easier testing
+//   const [error, setError] = useState<string | null>(null);
+//   const [isLoading, setIsLoading] = useState(false);
+
+//   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+//     event.preventDefault();
+//     setIsLoading(true);
+//     setError(null);
+
+//     try {
+//       // PERUBAHAN 1: URL dan path API disesuaikan
+//       const response = await fetch("http://127.0.0.1:3000/auth/login", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ username, password }),
+//       });
+
+//       const responseData = await response.json();
+
+//       // PERUBAHAN 2: Cek token dari dalam objek `data`
+//       if (!response.ok || !responseData.data.token) {
+//         throw new Error(responseData.message || "Username atau password salah");
+//       }
+
+//       // PERUBAHAN 3: Ambil token dari `responseData.data.token`
+//       Cookies.set('auth_token', responseData.data.token, { secure: true, sameSite: 'strict' });
+
+//       // Arahkan ke halaman bare-metal setelah login berhasil
+//       window.location.href = "/bare-metal"; 
+
+//     } catch (err: any) {
+//       setError(err.message);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
