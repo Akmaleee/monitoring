@@ -9,9 +9,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { EditBareMetalDialog } from "./edit-bare-metal-dialog"
+// 1. Impor komponen baru dari lokasi yang benar
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
 
 export type BareMetal = {
   id: number
@@ -25,15 +28,10 @@ export const getColumns = (
   onUpdate: () => void,
   isAdmin: boolean
 ): ColumnDef<BareMetal>[] => [
-  // -- Kolom "No." ditambahkan di sini --
   {
     id: "no",
     header: "No",
-    // 'row' berisi informasi baris, termasuk indeksnya
-    cell: ({ row }) => {
-      // Tambahkan 1 karena indeks dimulai dari 0
-      return <span>{row.index + 1}</span>
-    },
+    cell: ({ row }) => <span>{row.index + 1}</span>,
   },
   {
     accessorKey: "name",
@@ -79,6 +77,15 @@ export const getColumns = (
                           Copy URL 
                       </DropdownMenuItem>
                       <EditBareMetalDialog bareMetal={bareMetal} onBareMetalUpdated={onUpdate} />
+                      <DropdownMenuSeparator />
+                      {/* 2. Gunakan komponen baru di sini dengan props yang sesuai */}
+                      <ConfirmDeleteDialog
+                        itemId={bareMetal.id}
+                        itemName={bareMetal.name}
+                        itemType="Bare Metal"
+                        deleteEndpoint="http://127.0.0.1:3000/bare-metal"
+                        onActionSuccess={onUpdate}
+                      />
                     </>
                   )}
               </DropdownMenuContent>
@@ -88,6 +95,97 @@ export const getColumns = (
     },
   },
 ]
+
+// "use client"
+
+// import Link from "next/link"
+// import { ColumnDef } from "@tanstack/react-table"
+// import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+// import { Button } from "@/components/ui/button"
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuLabel,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu"
+// import { EditBareMetalDialog } from "./edit-bare-metal-dialog"
+
+// export type BareMetal = {
+//   id: number
+//   type: string
+//   name: string
+//   url: string
+//   api_token: string
+// }
+
+// export const getColumns = (
+//   onUpdate: () => void,
+//   isAdmin: boolean
+// ): ColumnDef<BareMetal>[] => [
+//   // -- Kolom "No." ditambahkan di sini --
+//   {
+//     id: "no",
+//     header: "No",
+//     // 'row' berisi informasi baris, termasuk indeksnya
+//     cell: ({ row }) => {
+//       // Tambahkan 1 karena indeks dimulai dari 0
+//       return <span>{row.index + 1}</span>
+//     },
+//   },
+//   {
+//     accessorKey: "name",
+//     header: ({ column }) => (
+//       <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+//         Name
+//         <ArrowUpDown className="ml-2 h-4 w-4" />
+//       </Button>
+//     ),
+//     cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
+//   },
+//   {
+//     accessorKey: "type",
+//     header: "Type",
+//   },
+//   {
+//     accessorKey: "url",
+//     header: () => <div className="text-left">URL</div>,
+//     cell: ({ row }) => {
+//         const url = row.getValue("url") as string;
+//         return <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">{url}</a>
+//     },
+//   },
+//   {
+//     id: "actions",
+//     header: () => <div className="text-center">Actions</div>,
+//     cell: ({ row }) => {
+//       const bareMetal = row.original;
+//       return (
+//         <div className="text-center">
+//             <DropdownMenu>
+//               <DropdownMenuTrigger asChild>
+//                   <Button variant="ghost" className="h-8 w-8 p-0"><span className="sr-only">Open menu</span><MoreHorizontal className="h-4 w-4" /></Button>
+//               </DropdownMenuTrigger>
+//               <DropdownMenuContent align="end">
+//                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
+//                   <DropdownMenuItem asChild>
+//                       <Link href={`/bare-metal/${bareMetal.id}`}>View Details</Link>
+//                   </DropdownMenuItem>
+//                   {isAdmin && (
+//                     <>
+//                       <DropdownMenuItem onClick={() => navigator.clipboard.writeText(bareMetal.url)}>
+//                           Copy URL 
+//                       </DropdownMenuItem>
+//                       <EditBareMetalDialog bareMetal={bareMetal} onBareMetalUpdated={onUpdate} />
+//                     </>
+//                   )}
+//               </DropdownMenuContent>
+//             </DropdownMenu>
+//         </div>
+//       );
+//     },
+//   },
+// ]
 
 // "use client"
 

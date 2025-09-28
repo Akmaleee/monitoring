@@ -100,7 +100,7 @@ export function AppSidebar() {
         <div>
           <div className="flex items-center gap-x-3 border-b px-4 py-3.5">
             <img src="/logo_tsat.png" alt="TSAT Logo" width={32} height={32} className="rounded-full" />
-            <h1 className="font-semibold text-lg">Infrastructure</h1>
+            <h1 className="font-semibold text-lg">Monitoring Infra</h1>
           </div>
           <SidebarGroup>
             <SidebarGroupLabel>Application</SidebarGroupLabel>
