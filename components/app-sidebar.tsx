@@ -1,23 +1,27 @@
 "use client"
 
-import { usePathname } from "next/navigation";
-import Link from "next/link"; // 1. Impor komponen Link dari Next.js
-import Cookies from "js-cookie";
-import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation"
+import Link from "next/link"
+import Cookies from "js-cookie"
+import { useState, useEffect } from "react"
+import dynamic from "next/dynamic"
+
 import {
   LayoutDashboard,
   Server,
   Monitor,
   Network,
   Database,
-  LogOut
+  LogOut,
 } from "lucide-react"
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,7 +32,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@/components/ui/alert-dialog"
+
 import {
   Sidebar,
   SidebarContent,
@@ -40,80 +45,164 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar"
 
-const menuItems = [ { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, }, { title: "IT Infra", icon: Network, items: [ { title: "Baremetal", url: "/bare-metal", icon: Server, }, { title: "VM", url: "/vm", icon: Monitor, }, { title: "NMS", icon: Database, items: [ { title: "Zabbix", url: "/zabbix", icon: () => <div className="w-4 h-4" />, } ] } ], }, ];
-const findActiveGroups = (items: any[], currentPath: string): string[] => { for (const item of items) { if (item.items) { const isAnyChildActive = item.items.some( (subItem: any) => subItem.url && currentPath.startsWith(subItem.url) ); if (isAnyChildActive) { const nestedGroups = findActiveGroups(item.items, currentPath); return [item.title, ...nestedGroups]; } const nestedGroups = findActiveGroups(item.items, currentPath); if (nestedGroups.length > 0) { return [item.title, ...nestedGroups]; } } } return []; };
+const ThemeToggle = dynamic(() => import("@/components/theme-toggle"), {
+  ssr: false,
+})
+
+const menuItems = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "IT Infra",
+    icon: Network,
+    items: [
+      {
+        title: "Baremetal",
+        url: "/bare-metal",
+        icon: Server,
+      },
+      {
+        title: "VM",
+        url: "/vm",
+        icon: Monitor,
+      },
+      {
+        title: "NMS",
+        icon: Database,
+        items: [
+          {
+            title: "Zabbix",
+            url: "/zabbix",
+            icon: () => <div className="w-4 h-4" />,
+          },
+        ],
+      },
+    ],
+  },
+]
+
+const findActiveGroups = (items: any[], currentPath: string): string[] => {
+  for (const item of items) {
+    if (item.items) {
+      const isAnyChildActive = item.items.some(
+        (subItem: any) => subItem.url && currentPath.startsWith(subItem.url)
+      )
+      if (isAnyChildActive) {
+        const nestedGroups = findActiveGroups(item.items, currentPath)
+        return [item.title, ...nestedGroups]
+      }
+      const nestedGroups = findActiveGroups(item.items, currentPath)
+      if (nestedGroups.length > 0) {
+        return [item.title, ...nestedGroups]
+      }
+    }
+  }
+  return []
+}
 
 export function AppSidebar() {
-  const pathname = usePathname();
-  const activeGroups = findActiveGroups(menuItems, pathname);
-  const [hasMounted, setHasMounted] = useState(false);
+  const pathname = usePathname()
+  const activeGroups = findActiveGroups(menuItems, pathname)
+  const [hasMounted, setHasMounted] = useState(false)
 
-  useEffect(() => { setHasMounted(true); }, []);
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
 
   const handleLogout = () => {
-    Cookies.remove("auth_token");
-    Cookies.remove("user_role");
-    window.location.href = "/login";
-  };
-  
+    Cookies.remove("auth_token")
+    Cookies.remove("user_role")
+    window.location.href = "/login"
+  }
+
   const renderMenu = (items: any[]) => {
     return items.map((item) => {
       if (item.items) {
+        // 🔹 Parent menu (IT Infra, NMS) → JANGAN pakai SidebarMenuItem
         return (
           <AccordionItem key={item.title} value={item.title} className="border-none">
-            <AccordionTrigger className="py-2 hover:no-underline">
+            <AccordionTrigger className="px-2 py-2 hover:no-underline">
               <div className="flex items-center gap-x-3">
                 <item.icon className="h-4 w-4" />
                 <span>{item.title}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="pl-7">
-              <Accordion type="multiple" className="w-full" defaultValue={activeGroups}>
+            <AccordionContent className="pl-6">
+              <Accordion
+                type="multiple"
+                className="w-full"
+                defaultValue={activeGroups}
+              >
                 {renderMenu(item.items)}
               </Accordion>
             </AccordionContent>
           </AccordionItem>
-        );
+        )
       }
-      const isActive = item.url === pathname || (item.url !== "/" && pathname.startsWith(item.url));
+
+      // 🔹 Child menu = SidebarMenuItem (li)
+      const isActive =
+        item.url === pathname ||
+        (item.url !== "/" && pathname.startsWith(item.url))
+
       return (
         <SidebarMenuItem key={item.title}>
-          {/* 2. Ganti tag <a> dengan <Link> */}
-          <SidebarMenuButton asChild className={`justify-start ${isActive ? 'bg-secondary' : 'hover:bg-muted'}`}>
+          <SidebarMenuButton
+            asChild
+            className={`justify-start ${
+              isActive ? "bg-secondary" : "hover:bg-muted"
+            }`}
+          >
             <Link href={item.url}>
               <item.icon className="h-4 w-4" />
               <span>{item.title}</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
-      );
-    });
-  };
-
-  if (!hasMounted) {
-    return null; 
+      )
+    })
   }
+
+  if (!hasMounted) return null
 
   return (
     <Sidebar>
       <SidebarContent className="flex h-full flex-col justify-between">
         <div>
           <div className="flex items-center gap-x-3 border-b px-4 py-3.5">
-            <img src="/logo_tsat.png" alt="TSAT Logo" width={32} height={32} className="rounded-full" />
+            <img
+              src="/logo_tsat.png"
+              alt="TSAT Logo"
+              width={32}
+              height={32}
+              className="rounded-full"
+            />
             <h1 className="font-semibold text-lg">Infrastructure</h1>
           </div>
           <SidebarGroup>
             <SidebarGroupLabel>Application</SidebarGroupLabel>
             <SidebarGroupContent>
-              <Accordion type="multiple" className="w-full" defaultValue={activeGroups}>
+              <Accordion
+                type="multiple"
+                className="w-full"
+                defaultValue={activeGroups}
+              >
                 {renderMenu(menuItems)}
               </Accordion>
             </SidebarGroupContent>
           </SidebarGroup>
         </div>
+
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <ThemeToggle />
+              </SidebarMenuItem>
+
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <SidebarMenuItem>
@@ -125,14 +214,19 @@ export function AppSidebar() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
+                    <AlertDialogTitle>
+                      Are you sure you want to log out?
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
-                      You will be returned to the login page and your current session will end.
+                      You will be returned to the login page and your current
+                      session will end.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleLogout}>Log Out</AlertDialogAction>
+                    <AlertDialogAction onClick={handleLogout}>
+                      Log Out
+                    </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -143,6 +237,7 @@ export function AppSidebar() {
     </Sidebar>
   )
 }
+
 
 // "use client"
 
