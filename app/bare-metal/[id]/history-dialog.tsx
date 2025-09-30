@@ -49,7 +49,7 @@ export function HistoryDialog({ node }: HistoryDialogProps) {
 
         try {
           const res = await fetch(
-            `http://127.0.0.1:3000/bare-metal/status-history/${node.id}`,
+            `${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal/status-history/${node.id}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }

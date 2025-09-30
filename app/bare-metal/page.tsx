@@ -9,7 +9,7 @@ import { AddBareMetalDialog } from "./add-bare-metal-dialog";
 import { useUserRole } from "@/hooks/use-user-role";
 
 async function getData(token: string): Promise<BareMetal[]> {
-  const res = await fetch('http://127.0.0.1:3000/bare-metal', {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal`, {
     cache: 'no-store',
     headers: { 'Authorization': `Bearer ${token}` }
   });

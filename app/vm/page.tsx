@@ -11,7 +11,7 @@ import { PlusCircle } from "lucide-react";
 import { useUserRole } from "@/hooks/use-user-role";
 
 async function getData(token: string): Promise<VirtualMachine[]> { 
-  const res = await fetch('http://127.0.0.1:3000/virtual-machine', { 
+  const res = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/virtual-machine`, { 
     cache: 'no-store', 
     headers: { 'Authorization': `Bearer ${token}` } 
   }); 

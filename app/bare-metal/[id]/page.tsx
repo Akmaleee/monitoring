@@ -17,7 +17,7 @@ interface BareMetalDetail {
 
 async function getDetailData(token: string, id: string): Promise<BareMetalDetail | null> {
   try {
-    const res = await fetch(`http://127.0.0.1:3000/bare-metal/${id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal/${id}`, {
       cache: 'no-store',
       headers: { 'Authorization': `Bearer ${token}` }
     });

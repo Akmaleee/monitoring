@@ -36,7 +36,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     setError(null);
 
     try {
-      const response = await fetch("http://127.0.0.1:3000/auth/login", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

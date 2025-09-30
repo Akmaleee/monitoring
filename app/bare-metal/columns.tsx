@@ -83,7 +83,7 @@ export const getColumns = (
                         itemId={bareMetal.id}
                         itemName={bareMetal.name}
                         itemType="Bare Metal"
-                        deleteEndpoint="http://127.0.0.1:3000/bare-metal"
+                        deleteEndpoint={`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal`}
                         onActionSuccess={onUpdate}
                       />
                     </>

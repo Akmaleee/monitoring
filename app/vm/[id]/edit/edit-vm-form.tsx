@@ -93,7 +93,7 @@ export function EditVmForm({ initialData }: EditVmFormProps) {
         disk: gbToBytes(vmData.disk) || null,
       };
 
-      const response = await fetch(`http://127.0.0.1:3000/virtual-machine/${initialData.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/virtual-machine/${initialData.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload),
@@ -125,7 +125,7 @@ export function EditVmForm({ initialData }: EditVmFormProps) {
             threshold_disk: Number(configData.threshold_disk) || 0,
         };
         
-        const response = await fetch(`http://127.0.0.1:3000/virtual-machine/config/${configId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/virtual-machine/config/${configId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(payload),

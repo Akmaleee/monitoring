@@ -5,7 +5,7 @@ import { BackButton } from '@/components/back-button'; // <-- 1. Impor komponen 
 
 async function getVmDetail(token: string, id: string) {
   try {
-    const res = await fetch(`http://127.0.0.1:3000/virtual-machine/${id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/virtual-machine/${id}`, {
       cache: 'no-store',
       headers: { 'Authorization': `Bearer ${token}` }
     });

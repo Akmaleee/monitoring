@@ -80,8 +80,8 @@ export default async function DashboardPage() {
 
   try {
     const [bareRes, vmRes] = await Promise.all([
-      fetchJson("http://127.0.0.1:3000/bare-metal", token),
-      fetchJson("http://127.0.0.1:3000/virtual-machine", token),
+      fetchJson(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal`, token),
+      fetchJson(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/virtual-machine`, token),
     ]);
 
     const bareList = normalizeArray(bareRes);

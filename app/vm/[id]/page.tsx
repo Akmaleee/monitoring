@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 // ... (Tipe data dan fungsi getVmDetail tetap sama) ...
 type VirtualMachineDetail = { id: number; bare_metal_id: number; bare_metal_node_id: number; vmid: string; code: string; name: string; cpu: number; memory: number; disk: number; virtual_machine_config: { id: number; is_alert_status: boolean; is_alert_disk: boolean; threshold_disk: number; }; virtual_machine_status: { status: string; }; }
 const formatBytes = (bytes: number, decimals = 2) => { if (!+bytes) return '0 Bytes'; const k = 1024; const dm = decimals < 0 ? 0 : decimals; const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`; }
-async function getVmDetail(token: string, id: string): Promise<VirtualMachineDetail | null> { try { const res = await fetch(`http://127.0.0.1:3000/virtual-machine/${id}`, { cache: 'no-store', headers: { 'Authorization': `Bearer ${token}` } }); if (!res.ok) return null; return (await res.json())?.data || null; } catch (error) { console.error("An error occurred while fetching VM detail data:", error); return null; } }
+async function getVmDetail(token: string, id: string): Promise<VirtualMachineDetail | null> { try { const res = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/virtual-machine/${id}`, { cache: 'no-store', headers: { 'Authorization': `Bearer ${token}` } }); if (!res.ok) return null; return (await res.json())?.data || null; } catch (error) { console.error("An error occurred while fetching VM detail data:", error); return null; } }
 
 
 // -- Perubahan: Komponen DetailRow diubah menjadi 3 kolom --

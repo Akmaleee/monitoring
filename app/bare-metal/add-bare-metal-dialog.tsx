@@ -24,7 +24,7 @@ export function AddBareMetalDialog({ onBareMetalAdded }: AddBareMetalDialogProps
     const toastId = toast.loading("Creating bare metal server...");
     const token = Cookies.get('auth_token');
     try {
-      const response = await fetch('http://127.0.0.1:3000/bare-metal', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, }, body: JSON.stringify(formData), });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, }, body: JSON.stringify(formData), });
       if (!response.ok) { const errorData = await response.json().catch(() => ({ message: "An unexpected error occurred." })); throw new Error(errorData.message || "Failed to add new bare metal server."); }
       toast.success("Creation Successful!", { id: toastId, description: `Bare metal "${formData.name}" has been created.`, });
       onBareMetalAdded();

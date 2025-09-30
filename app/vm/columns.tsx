@@ -204,7 +204,7 @@ export const getColumns = (
                     itemId={vm.id}
                     itemName={vm.name}
                     itemType="Virtual Machine"
-                    deleteEndpoint="http://127.0.0.1:3000/virtual-machine"
+                    deleteEndpoint={`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/virtual-machine`}
                     onActionSuccess={refreshData}
                   />
                 </>

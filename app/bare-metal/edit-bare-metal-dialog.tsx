@@ -74,7 +74,7 @@ export function EditBareMetalDialog({ bareMetal, onBareMetalUpdated }: EditBareM
     const token = Cookies.get('auth_token');
 
     try {
-      const response = await fetch(`http://127.0.0.1:3000/bare-metal/${bareMetal.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal/${bareMetal.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

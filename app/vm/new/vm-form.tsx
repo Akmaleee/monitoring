@@ -87,7 +87,7 @@ export function VmForm() {
         }
       };
 
-      const response = await fetch('http://127.0.0.1:3000/virtual-machine', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/virtual-machine`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

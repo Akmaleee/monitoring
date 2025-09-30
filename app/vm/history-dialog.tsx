@@ -49,7 +49,7 @@ export function HistoryDialog({ vm }: HistoryDialogProps) {
 
         try {
           const res = await fetch(
-            `http://127.0.0.1:3000/virtual-machine/status-history/${vm.id}`,
+            `${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/virtual-machine/status-history/${vm.id}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           if (!res.ok) throw new Error("Failed to fetch history data.");
