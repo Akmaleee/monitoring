@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Cookies from 'js-cookie';
+import { getCookie, deleteCookie } from "cookies-next"; // Menggunakan cookies-next
 import { getColumns, BareMetal } from "./columns"; 
 import { DataTable } from "./data-table";
 import { DataTableSkeleton } from "./data-table-skeleton";
@@ -27,7 +27,10 @@ export default function BareMetalPage() {
 
   const fetchAndSetData = useCallback(async () => {
     if (!isLoading) setIsLoading(true);
-    const token = Cookies.get('auth_token');
+    
+    // Tambahkan 'await' di sini
+    const token = await getCookie('auth_token');
+
     if (token) {
       try {
         const fetchedData = await getData(token);
@@ -36,7 +39,7 @@ export default function BareMetalPage() {
       } catch (error: any) {
         setError(error.message);
         if (error.message === 'Token is invalid or expired') {
-          Cookies.remove('auth_token');
+          deleteCookie('auth_token'); // Menggunakan deleteCookie
           window.location.href = '/login';
         }
       }
@@ -61,7 +64,6 @@ export default function BareMetalPage() {
       <DataTable 
         columns={columns} 
         data={data}
-        // -- Perubahan di sini: tambahkan 'whitespace-nowrap' --
         titleComponent={<h1 className="text-2xl font-bold whitespace-nowrap">Bare Metal Servers</h1>}
         actionComponent={
           isAdmin && <AddBareMetalDialog onBareMetalAdded={fetchAndSetData} />
@@ -70,6 +72,80 @@ export default function BareMetalPage() {
     </div>
   );
 }
+
+
+// "use client";
+
+// import { useState, useEffect, useCallback } from "react";
+// import { getCookie, deleteCookie } from "cookies-next";
+// import { getColumns, BareMetal } from "./columns"; 
+// import { DataTable } from "./data-table";
+// import { DataTableSkeleton } from "./data-table-skeleton";
+// import { AddBareMetalDialog } from "./add-bare-metal-dialog";
+// import { useUserRole } from "@/hooks/use-user-role";
+
+// async function getData(token: string): Promise<BareMetal[]> {
+//   const res = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal`, {
+//     cache: 'no-store',
+//     headers: { 'Authorization': `Bearer ${token}` }
+//   });
+//   if (res.status === 401 || res.status === 403) throw new Error('Token is invalid or expired');
+//   if (!res.ok) throw new Error('Failed to fetch data from API');
+//   const responseData = await res.json();
+//   return responseData?.data || [];
+// }
+
+// export default function BareMetalPage() {
+//   const [data, setData] = useState<BareMetal[]>([]);
+//   const [isLoading, setIsLoading] = useState(true);
+//   const [error, setError] = useState<string | null>(null);
+//   const { isAdmin } = useUserRole();
+
+//   const fetchAndSetData = useCallback(async () => {
+//     if (!isLoading) setIsLoading(true);
+//     const token = getCookie('auth_token');
+//     if (token) {
+//       try {
+//         const fetchedData = await getData(token);
+//         setData(fetchedData);
+//         setError(null);
+//       } catch (error: any) {
+//         setError(error.message);
+//         if (error.message === 'Token is invalid or expired') {
+//           deleteCookie('auth_token');
+//           window.location.href = '/login';
+//         }
+//       }
+//     } else {
+//       window.location.href = '/login';
+//     }
+//     setIsLoading(false);
+//   }, [isLoading]);
+
+//   useEffect(() => {
+//     fetchAndSetData();
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, []);
+
+//   const columns = getColumns(fetchAndSetData, isAdmin);
+
+//   if (isLoading && data.length === 0) return <DataTableSkeleton />;
+//   if (error) return <div><p className="text-red-500">Error: {error}</p></div>;
+
+//   return (
+//     <div>
+//       <DataTable 
+//         columns={columns} 
+//         data={data}
+//         // -- Perubahan di sini: tambahkan 'whitespace-nowrap' --
+//         titleComponent={<h1 className="text-2xl font-bold whitespace-nowrap">Bare Metal Servers</h1>}
+//         actionComponent={
+//           isAdmin && <AddBareMetalDialog onBareMetalAdded={fetchAndSetData} />
+//         } 
+//       />
+//     </div>
+//   );
+// }
 
 // "use client";
 

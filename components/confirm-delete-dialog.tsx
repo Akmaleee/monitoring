@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Cookies from 'js-cookie';
+import { getCookie } from 'cookies-next';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -39,7 +39,7 @@ export function ConfirmDeleteDialog({
   const handleDelete = async () => {
     setIsLoading(true);
     const toastId = toast.loading(`Deleting ${itemType} "${itemName}"...`);
-    const token = Cookies.get('auth_token');
+    const token = getCookie('auth_token');
 
     try {
       const response = await fetch(`${deleteEndpoint}/${itemId}`, {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Cookies from 'js-cookie';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,6 +34,7 @@ import {
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { BareMetal } from "./columns";
 import { toast } from "sonner";
+import { getCookie } from "cookies-next";
 
 interface EditBareMetalDialogProps {
   bareMetal: BareMetal;
@@ -71,7 +71,7 @@ export function EditBareMetalDialog({ bareMetal, onBareMetalUpdated }: EditBareM
     setIsLoading(true);
     const toastId = toast.loading("Updating bare metal server...");
 
-    const token = Cookies.get('auth_token');
+    const token = getCookie('auth_token');
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal/${bareMetal.id}`, {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
+import { getCookie } from "cookies-next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -79,7 +79,7 @@ export function EditVmForm({ initialData }: EditVmFormProps) {
   const handleVmSubmit = async () => {
     setVmLoading(true);
     const toastId = toast.loading("Saving VM details...");
-    const token = Cookies.get('auth_token');
+    const token = getCookie('auth_token');
 
     try {
       const payload = {
@@ -114,7 +114,7 @@ export function EditVmForm({ initialData }: EditVmFormProps) {
   const handleConfigSubmit = async () => {
     setConfigLoading(true);
     const toastId = toast.loading("Saving configuration...");
-    const token = Cookies.get('auth_token');
+    const token = getCookie('auth_token');
     const configId = initialData.virtual_machine_config.id;
 
     try {

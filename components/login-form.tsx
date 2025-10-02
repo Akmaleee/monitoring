@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Cookies from "js-cookie";
+// import Cookies from "js-cookie";
+import { setCookie } from "cookies-next";
 import { jwtDecode } from "jwt-decode";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -49,16 +50,16 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       }
 
       const token = responseData.data.token;
-      Cookies.set("auth_token", token, { secure: true, sameSite: "strict" });
+      setCookie("auth_token", token, { secure: true, sameSite: "strict" });
 
       // Decode token dan simpan role
       try {
         const decodedToken = jwtDecode<DecodedToken>(token);
         const userRole = decodedToken.user?.role?.[0]?.Role?.name || "user";
-        Cookies.set("user_role", userRole, { secure: true, sameSite: "strict" });
+        setCookie("user_role", userRole, { secure: true, sameSite: "strict" });
       } catch (e) {
         console.error("Failed to decode token, defaulting to 'user' role.", e);
-        Cookies.set("user_role", "user", { secure: true, sameSite: "strict" });
+        setCookie("user_role", "user", { secure: true, sameSite: "strict" });
       }
 
       window.location.href = "/dashboard";

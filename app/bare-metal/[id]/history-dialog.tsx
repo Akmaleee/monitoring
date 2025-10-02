@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
+// import Cookies from "js-cookie";
+import { getCookie } from "cookies-next";
 import {
   Dialog,
   DialogContent,
@@ -45,7 +46,7 @@ export function HistoryDialog({ node }: HistoryDialogProps) {
       const fetchHistory = async () => {
         setIsLoading(true);
         setError(null);
-        const token = Cookies.get("auth_token");
+        const token = getCookie("auth_token");
 
         try {
           const res = await fetch(

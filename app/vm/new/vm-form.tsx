@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
+import { getCookie } from 'cookies-next';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -69,7 +69,7 @@ export function VmForm() {
   const handleSubmit = async () => {
     setIsLoading(true);
     const toastId = toast.loading("Creating new virtual machine...");
-    const token = Cookies.get('auth_token');
+    const token = getCookie('auth_token');
 
     try {
       const payload = {

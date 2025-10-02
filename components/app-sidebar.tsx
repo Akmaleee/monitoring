@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import Cookies from "js-cookie"
+import { deleteCookie } from "cookies-next";
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 
@@ -113,8 +113,8 @@ export function AppSidebar() {
   }, [])
 
   const handleLogout = () => {
-    Cookies.remove("auth_token")
-    Cookies.remove("user_role")
+    deleteCookie("auth_token")
+    deleteCookie("user_role")
     window.location.href = "/login"
   }
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +21,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Terminal } from "lucide-react";
+import { getCookie } from "cookies-next";
 
 interface HistoryItem {
   id: number;
@@ -45,7 +45,7 @@ export function HistoryDialog({ vm }: HistoryDialogProps) {
       const fetchHistory = async () => {
         setIsLoading(true);
         setError(null);
-        const token = Cookies.get("auth_token");
+        const token = getCookie("auth_token");
 
         try {
           const res = await fetch(

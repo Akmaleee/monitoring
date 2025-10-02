@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Cookies from 'js-cookie';
+// import Cookies from 'js-cookie';
+import { getCookie } from 'cookies-next';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -22,7 +23,7 @@ export function AddBareMetalDialog({ onBareMetalAdded }: AddBareMetalDialogProps
   const handleSubmit = async () => {
     setIsLoading(true);
     const toastId = toast.loading("Creating bare metal server...");
-    const token = Cookies.get('auth_token');
+    const token = getCookie('auth_token');
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, }, body: JSON.stringify(formData), });
       if (!response.ok) { const errorData = await response.json().catch(() => ({ message: "An unexpected error occurred." })); throw new Error(errorData.message || "Failed to add new bare metal server."); }
