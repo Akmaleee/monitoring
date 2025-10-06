@@ -40,9 +40,9 @@ export const columns: ColumnDef<BareMetalNode>[] = [
   {
     id: "status",
     header: "Status",
+    accessorFn: row => row.BareMetalNodeStatus?.[0]?.status?.toLowerCase() || 'unknown',
     cell: ({ row }) => {
-      const statusInfo = row.original.BareMetalNodeStatus?.[0];
-      const status = statusInfo?.status?.toLowerCase() || 'unknown';
+      const status = row.getValue("status") as string;
       switch (status) {
         case 'online': return <div className="flex items-center gap-x-2"><span className="relative flex size-3"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex size-3 rounded-full bg-green-500"></span></span><span className="capitalize">{status}</span></div>;
         case 'offline': return <div className="flex items-center gap-x-2"><span className="relative flex size-3"><span className="relative inline-flex size-3 rounded-full bg-red-500"></span></span><span className="capitalize">{status}</span></div>;
@@ -53,8 +53,18 @@ export const columns: ColumnDef<BareMetalNode>[] = [
   { accessorKey: "bare_metal_id", header: () => <div className="text-center">Bare Metal ID</div>, cell: ({ row }) => <div className="text-center">{row.getValue("bare_metal_id")}</div> },
   { accessorKey: "node", header: ({ column }) => <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>Node Name<ArrowUpDown className="ml-2 h-4 w-4" /></Button> },
   { accessorKey: "cpu", header: ({ column }) => <div className="text-center"><Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>CPU Cores<ArrowUpDown className="ml-2 h-4 w-4" /></Button></div>, cell: ({ row }) => <div className="text-center">{row.getValue("cpu")}</div> },
-  { accessorKey: "memory", header: () => <div className="text-right">Memory</div>, cell: ({ row }) => <div className="text-right font-medium">{formatBytes(row.getValue("memory"))}</div> },
-  { accessorKey: "disk", header: () => <div className="text-right">Disk</div>, cell: ({ row }) => <div className="text-right font-medium">{formatBytes(row.getValue("disk"))}</div> },
+  { 
+    id: "memory",
+    accessorFn: row => formatBytes(row.memory),
+    header: () => <div className="text-right">Memory</div>, 
+    cell: ({ getValue }) => <div className="text-right font-medium">{getValue<string>()}</div> 
+  },
+  { 
+    id: "disk",
+    accessorFn: row => formatBytes(row.disk),
+    header: () => <div className="text-right">Disk</div>, 
+    cell: ({ getValue }) => <div className="text-right font-medium">{getValue<string>()}</div> 
+  },
   
   {
     id: "actions",
@@ -73,11 +83,6 @@ export const columns: ColumnDef<BareMetalNode>[] = [
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Node Actions</DropdownMenuLabel>
               <HistoryDialog node={node} />
-              {/* Baris di bawah ini telah dihapus
-              <DropdownMenuItem onClick={() => alert(`Editing node ${node.id}`)}>
-                Edit
-              </DropdownMenuItem> 
-              */}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -85,6 +90,94 @@ export const columns: ColumnDef<BareMetalNode>[] = [
     },
   },
 ]
+
+// "use client"
+
+// import { ColumnDef } from "@tanstack/react-table"
+// import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+// import { Button } from "@/components/ui/button"
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuLabel,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu"
+// import { HistoryDialog } from "./history-dialog"; 
+
+// type BareMetalNodeStatus = {
+//   id: number
+//   status: string
+// }
+
+// export type BareMetalNode = {
+//   id: number
+//   bare_metal_id: number
+//   node: string
+//   cpu: number
+//   memory: number
+//   disk: number
+//   BareMetalNodeStatus: BareMetalNodeStatus[]
+// }
+
+// const formatBytes = (bytes: number, decimals = 2) => {
+//   if (!+bytes) return '0 Bytes'
+//   const k = 1024
+//   const dm = decimals < 0 ? 0 : decimals
+//   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB']
+//   const i = Math.floor(Math.log(bytes) / Math.log(k))
+//   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+// }
+
+// export const columns: ColumnDef<BareMetalNode>[] = [
+//   {
+//     id: "status",
+//     header: "Status",
+//     cell: ({ row }) => {
+//       const statusInfo = row.original.BareMetalNodeStatus?.[0];
+//       const status = statusInfo?.status?.toLowerCase() || 'unknown';
+//       switch (status) {
+//         case 'online': return <div className="flex items-center gap-x-2"><span className="relative flex size-3"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex size-3 rounded-full bg-green-500"></span></span><span className="capitalize">{status}</span></div>;
+//         case 'offline': return <div className="flex items-center gap-x-2"><span className="relative flex size-3"><span className="relative inline-flex size-3 rounded-full bg-red-500"></span></span><span className="capitalize">{status}</span></div>;
+//         default: return <div className="flex items-center gap-x-2"><span className="relative flex size-3"><span className="relative inline-flex size-3 rounded-full bg-gray-500"></span></span><span className="capitalize">{status}</span></div>;
+//       }
+//     },
+//   },
+//   { accessorKey: "bare_metal_id", header: () => <div className="text-center">Bare Metal ID</div>, cell: ({ row }) => <div className="text-center">{row.getValue("bare_metal_id")}</div> },
+//   { accessorKey: "node", header: ({ column }) => <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>Node Name<ArrowUpDown className="ml-2 h-4 w-4" /></Button> },
+//   { accessorKey: "cpu", header: ({ column }) => <div className="text-center"><Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>CPU Cores<ArrowUpDown className="ml-2 h-4 w-4" /></Button></div>, cell: ({ row }) => <div className="text-center">{row.getValue("cpu")}</div> },
+//   { accessorKey: "memory", header: () => <div className="text-right">Memory</div>, cell: ({ row }) => <div className="text-right font-medium">{formatBytes(row.getValue("memory"))}</div> },
+//   { accessorKey: "disk", header: () => <div className="text-right">Disk</div>, cell: ({ row }) => <div className="text-right font-medium">{formatBytes(row.getValue("disk"))}</div> },
+  
+//   {
+//     id: "actions",
+//     header: () => <div className="text-center">Actions</div>,
+//     cell: ({ row }) => {
+//       const node = row.original
+//       return (
+//         <div className="text-center">
+//           <DropdownMenu>
+//             <DropdownMenuTrigger asChild>
+//               <Button variant="ghost" className="h-8 w-8 p-0">
+//                 <span className="sr-only">Open menu</span>
+//                 <MoreHorizontal className="h-4 w-4" />
+//               </Button>
+//             </DropdownMenuTrigger>
+//             <DropdownMenuContent align="end">
+//               <DropdownMenuLabel>Node Actions</DropdownMenuLabel>
+//               <HistoryDialog node={node} />
+//               {/* Baris di bawah ini telah dihapus
+//               <DropdownMenuItem onClick={() => alert(`Editing node ${node.id}`)}>
+//                 Edit
+//               </DropdownMenuItem> 
+//               */}
+//             </DropdownMenuContent>
+//           </DropdownMenu>
+//         </div>
+//       )
+//     },
+//   },
+// ]
 
 // "use client"
 

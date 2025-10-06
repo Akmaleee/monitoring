@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { columns, BareMetalNode } from "./columns";
 import { DataTable } from "./data-table"; 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from 'next/link';
 import { BackButton } from '@/components/back-button';
 import { Separator } from '@/components/ui/separator';
@@ -29,6 +30,15 @@ async function getDetailData(token: string, id: string): Promise<BareMetalDetail
     return null;
   }
 }
+
+// Komponen helper untuk baris detail
+const DetailRow = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <>
+    <div className="font-semibold text-muted-foreground">{label}</div>
+    <div className="font-semibold text-muted-foreground">:</div>
+    <div className="font-medium break-all">{children}</div>
+  </>
+);
 
 export default async function BareMetalDetailPage({ params: { id } }: { params: { id: string } }) {
   const cookieStore = await cookies();
@@ -65,38 +75,54 @@ export default async function BareMetalDetailPage({ params: { id } }: { params: 
       <div className="max-w-5xl mx-auto space-y-4">
         <BackButton />
 
-        <Card className="w-fit">
-          <CardHeader>
-            <CardTitle>Bare Metal: {data.name}</CardTitle>
-            <CardDescription>
-              Details for server ID: {data.id}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* -- Perubahan: Gunakan grid 3 kolom untuk perataan presisi -- */}
-            <div className="grid grid-cols-[auto_auto_1fr] items-center gap-x-2 gap-y-3">
-              <div className="font-semibold text-muted-foreground">Type</div>
-              <div className="font-semibold text-muted-foreground">:</div>
-              <div className="font-medium">{data.type}</div>
+        <div>
+            <h1 className="text-2xl font-bold">Bare Metal: {data.name}</h1>
+            <p className="text-muted-foreground">Details for server ID: {data.id}</p>
+        </div>
+        
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            {isAdmin && <TabsTrigger value="credentials">Credentials</TabsTrigger>}
+          </TabsList>
 
-              <div className="font-semibold text-muted-foreground">URL</div>
-              <div className="font-semibold text-muted-foreground">:</div>
-              <a href={data.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline break-all">
-                {data.url}
-              </a>
-
-              {isAdmin && (
-                <>
-                  <div className="font-semibold text-muted-foreground">API Token</div>
-                  <div className="font-semibold text-muted-foreground">:</div>
-                  <div className="font-mono text-sm break-all p-2 bg-muted rounded-md">
-                    {data.api_token}
+          <TabsContent value="overview">
+            <Card>
+              <CardHeader>
+                <CardTitle>Overview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-[auto_auto_1fr] items-center gap-x-2 gap-y-3">
+                  <DetailRow label="Type">{data.type}</DetailRow>
+                  <DetailRow label="URL">
+                    <a href={data.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                      {data.url}
+                    </a>
+                  </DetailRow>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {isAdmin && (
+            <TabsContent value="credentials">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Credentials</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-[auto_auto_1fr] items-center gap-x-2 gap-y-3">
+                    <DetailRow label="API Token">
+                      <div className="font-mono text-sm p-2 bg-muted rounded-md">
+                        {data.api_token}
+                      </div>
+                    </DetailRow>
                   </div>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
+        </Tabs>
         
         <Separator className="my-6" />
 
@@ -111,6 +137,120 @@ export default async function BareMetalDetailPage({ params: { id } }: { params: 
     </div>
   );
 }
+
+// import { cookies } from 'next/headers'; 
+// import { columns, BareMetalNode } from "./columns";
+// import { DataTable } from "./data-table"; 
+// import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+// import Link from 'next/link';
+// import { BackButton } from '@/components/back-button';
+// import { Separator } from '@/components/ui/separator';
+
+// interface BareMetalDetail {
+//   id: number;
+//   name: string;
+//   type: string;
+//   url: string;
+//   api_token: string;
+//   bare_metal_node: BareMetalNode[];
+// }
+
+// async function getDetailData(token: string, id: string): Promise<BareMetalDetail | null> {
+//   try {
+//     const res = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal/${id}`, {
+//       cache: 'no-store',
+//       headers: { 'Authorization': `Bearer ${token}` }
+//     });
+//     if (!res.ok) { return null; }
+//     const responseData = await res.json();
+//     return responseData?.data || null;
+//   } catch (error) {
+//     console.error("An error occurred while fetching detail data:", error);
+//     return null;
+//   }
+// }
+
+// export default async function BareMetalDetailPage({ params: { id } }: { params: { id: string } }) {
+//   const cookieStore = await cookies();
+//   const token = cookieStore.get('auth_token')?.value;
+//   const userRole = cookieStore.get('user_role')?.value;
+//   const isAdmin = userRole === 'admin';
+
+//   if (!token) {
+//     return (
+//       <div className="container mx-auto py-10">
+//         <p>Authentication required. Please <Link href="/login" className="text-blue-500">login</Link>.</p>
+//       </div>
+//     );
+//   }
+
+//   const data = await getDetailData(token, id);
+
+//   if (!data) {
+//     return (
+//       <div className="container mx-auto py-10">
+//         <h1 className="text-2xl font-bold">Data Not Found</h1>
+//         <p className="mt-2 text-muted-foreground">
+//           The bare metal server with ID <span className="font-mono">{id}</span> could not be found.
+//         </p>
+//         <Link href="/bare-metal" className="mt-4 inline-block text-blue-500 hover:underline">
+//           &larr; Back to Bare Metal List
+//         </Link>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="container mx-auto py-10">
+//       <div className="max-w-5xl mx-auto space-y-4">
+//         <BackButton />
+
+//         <Card className="w-fit">
+//           <CardHeader>
+//             <CardTitle>Bare Metal: {data.name}</CardTitle>
+//             <CardDescription>
+//               Details for server ID: {data.id}
+//             </CardDescription>
+//           </CardHeader>
+//           <CardContent>
+//             {/* -- Perubahan: Gunakan grid 3 kolom untuk perataan presisi -- */}
+//             <div className="grid grid-cols-[auto_auto_1fr] items-center gap-x-2 gap-y-3">
+//               <div className="font-semibold text-muted-foreground">Type</div>
+//               <div className="font-semibold text-muted-foreground">:</div>
+//               <div className="font-medium">{data.type}</div>
+
+//               <div className="font-semibold text-muted-foreground">URL</div>
+//               <div className="font-semibold text-muted-foreground">:</div>
+//               <a href={data.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline break-all">
+//                 {data.url}
+//               </a>
+
+//               {isAdmin && (
+//                 <>
+//                   <div className="font-semibold text-muted-foreground">API Token</div>
+//                   <div className="font-semibold text-muted-foreground">:</div>
+//                   <div className="font-mono text-sm break-all p-2 bg-muted rounded-md">
+//                     {data.api_token}
+//                   </div>
+//                 </>
+//               )}
+//             </div>
+//           </CardContent>
+//         </Card>
+        
+//         <Separator className="my-6" />
+
+//         {data.type.toUpperCase() === 'PROXMOX' && (
+//           <DataTable
+//             columns={columns}
+//             data={data.bare_metal_node}
+//             titleComponent={<h2 className="text-2xl font-bold whitespace-nowrap m-0">Bare Metal Nodes</h2>}
+//           />
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
 
 // import { cookies } from 'next/headers'; 
 // import { columns, BareMetalNode } from "./columns";

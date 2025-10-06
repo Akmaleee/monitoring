@@ -16,7 +16,7 @@ import { HistoryDialog } from "./history-dialog"
 import { toast } from "sonner"
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
 
-// 1. Tipe data diperbarui untuk mencakup 'type' dalam status
+// Tipe data diperbarui untuk mencakup 'type' dalam status
 type VirtualMachineStatus = {
   type: string;
   status: string;
@@ -80,7 +80,7 @@ export const getColumns = (
     {
       id: 'status',
       header: "Status",
-      // 2. Logika status diperbarui untuk memeriksa 'type'
+      // Logika status diperbarui untuk memeriksa 'type'
       cell: ({ row }) => {
         const statusInfo = row.original.virtual_machine_status;
         const statusType = statusInfo?.type?.toUpperCase();
@@ -102,14 +102,36 @@ export const getColumns = (
     },
     {
       accessorKey: "bare_metal.name",
-      header: "Bare Metal Name",
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Bare Metal Name <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
     },
     {
       accessorKey: "bare_metal_node.node",
-      header: "Node Name",
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Node Name <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
     },
-    { accessorKey: "vmid", header: "VM ID" },
-    { accessorKey: "code", header: "Code" },
+    {
+      accessorKey: "vmid",
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          VM ID <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+    },
+    {
+      accessorKey: "code",
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Code <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+    },
     {
       accessorKey: "name",
       header: ({ column }) => (
@@ -118,20 +140,38 @@ export const getColumns = (
         </Button>
       ),
     },
-    { accessorKey: "cpu", header: "CPU" },
+    {
+      accessorKey: "cpu",
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          CPU <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+    },
     {
       id: "memory",
-      header: () => <div className="text-right">Memory</div>,
+      header: ({ column }) => (
+        <div className="text-right">
+          <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Memory <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      ),
       accessorFn: row => formatBytes(row.memory),
       cell: ({ getValue }) => <div className="text-right">{getValue<string>()}</div>,
     },
     {
       id: "disk",
-      header: () => <div className="text-right">Disk</div>,
+      header: ({ column }) => (
+        <div className="text-right">
+          <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Disk <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      ),
       accessorFn: row => formatBytes(row.disk),
       cell: ({ getValue }) => <div className="text-right">{getValue<string>()}</div>,
     },
-    // 3. KOLOM BARU DITAMBAHKAN DI SINI
     {
       id: "disk_usage",
       header: () => <div className="text-right">Disk Usage</div>,
@@ -216,6 +256,224 @@ export const getColumns = (
     },
   ]
 }
+// "use client"
+
+// import Link from "next/link"
+// import { ColumnDef } from "@tanstack/react-table"
+// import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+// import { Button } from "@/components/ui/button"
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuLabel,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu"
+// import { HistoryDialog } from "./history-dialog"
+// import { toast } from "sonner"
+// import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
+
+// // 1. Tipe data diperbarui untuk mencakup 'type' dalam status
+// type VirtualMachineStatus = {
+//   type: string;
+//   status: string;
+// }
+
+// type BareMetalInfo = {
+//   id: number;
+//   name: string;
+//   url: string;
+// }
+
+// type BareMetalNodeInfo = {
+//   id: number;
+//   node: string;
+//   disk: number;
+// }
+
+// export type VirtualMachine = {
+//   id: number
+//   bare_metal_id: number
+//   bare_metal: BareMetalInfo;
+//   bare_metal_node_id: number
+//   bare_metal_node: BareMetalNodeInfo;
+//   vmid: string
+//   code: string
+//   name: string
+//   cpu: number
+//   memory: number
+//   disk: number
+//   virtual_machine_status: VirtualMachineStatus // Tipe ini sekarang lebih fleksibel
+// }
+
+// const formatBytes = (bytes: number, decimals = 2) => {
+//   if (!+bytes || bytes === 0) return '0 Bytes'
+//   const k = 1024
+//   const dm = decimals < 0 ? 0 : decimals
+//   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB']
+//   const i = Math.floor(Math.log(bytes) / Math.log(k))
+//   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+// }
+
+// export const getColumns = (
+//   refreshData: () => void,
+//   isAdmin: boolean
+// ): ColumnDef<VirtualMachine>[] => {
+
+//   const handleAction = async (vmName: string, action: 'Start' | 'Stop' | 'Restart') => {
+//     const toastId = toast.loading(`Sending ${action} command to "${vmName}"...`);
+    
+//     await new Promise(resolve => setTimeout(resolve, 1500));
+    
+//     toast.success(`Command "${action}" sent successfully!`, {
+//       id: toastId,
+//       description: "Refreshing data...",
+//     });
+
+//     refreshData();
+//   };
+
+//   return [
+//     {
+//       id: 'status',
+//       header: "Status",
+//       // 2. Logika status diperbarui untuk memeriksa 'type'
+//       cell: ({ row }) => {
+//         const statusInfo = row.original.virtual_machine_status;
+//         const statusType = statusInfo?.type?.toUpperCase();
+//         const status = statusInfo?.status?.toLowerCase() || 'unknown';
+
+//         if (statusType !== 'STATUS') {
+//            return <div className="flex items-center gap-x-2"><span className="relative flex size-3"><span className="relative inline-flex size-3 rounded-full bg-gray-500"></span></span><span className="capitalize">Unknown</span></div>;
+//         }
+
+//         switch (status) {
+//           case 'running':
+//             return <div className="flex items-center gap-x-2"><span className="relative flex size-3"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex size-3 rounded-full bg-green-500"></span></span><span className="capitalize">{status}</span></div>;
+//           case 'stopped':
+//             return <div className="flex items-center gap-x-2"><span className="relative flex size-3"><span className="relative inline-flex size-3 rounded-full bg-red-500"></span></span><span className="capitalize">{status}</span></div>;
+//           default:
+//             return <div className="flex items-center gap-x-2"><span className="relative flex size-3"><span className="relative inline-flex size-3 rounded-full bg-gray-500"></span></span><span className="capitalize">{status}</span></div>;
+//         }
+//       },
+//     },
+//     {
+//       accessorKey: "bare_metal.name",
+//       header: "Bare Metal Name",
+//     },
+//     {
+//       accessorKey: "bare_metal_node.node",
+//       header: "Node Name",
+//     },
+//     { accessorKey: "vmid", header: "VM ID" },
+//     { accessorKey: "code", header: "Code" },
+//     {
+//       accessorKey: "name",
+//       header: ({ column }) => (
+//         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+//           Name <ArrowUpDown className="ml-2 h-4 w-4" />
+//         </Button>
+//       ),
+//     },
+//     { accessorKey: "cpu", header: "CPU" },
+//     {
+//       id: "memory",
+//       header: () => <div className="text-right">Memory</div>,
+//       accessorFn: row => formatBytes(row.memory),
+//       cell: ({ getValue }) => <div className="text-right">{getValue<string>()}</div>,
+//     },
+//     {
+//       id: "disk",
+//       header: () => <div className="text-right">Disk</div>,
+//       accessorFn: row => formatBytes(row.disk),
+//       cell: ({ getValue }) => <div className="text-right">{getValue<string>()}</div>,
+//     },
+//     // 3. KOLOM BARU DITAMBAHKAN DI SINI
+//     {
+//       id: "disk_usage",
+//       header: () => <div className="text-right">Disk Usage</div>,
+//       cell: ({ row }) => {
+//         const vm = row.original;
+//         const totalDisk = vm.disk;
+//         const statusInfo = vm.virtual_machine_status;
+
+//         if (statusInfo && statusInfo.type === 'DISK' && totalDisk > 0) {
+//           const usedDisk = Number(statusInfo.status);
+//           const usagePercent = (usedDisk / totalDisk) * 100;
+          
+//           return (
+//             <div className="text-right font-medium">
+//               {`${formatBytes(usedDisk)} / ${formatBytes(totalDisk)} (${usagePercent.toFixed(2)}%)`}
+//             </div>
+//           );
+//         }
+
+//         return <div className="text-right text-muted-foreground">N/A</div>;
+//       },
+//     },
+//     {
+//       id: "actions",
+//       cell: ({ row }) => {
+//         const vm = row.original;
+//         const status = vm.virtual_machine_status?.type === 'STATUS' 
+//           ? vm.virtual_machine_status.status.toLowerCase() 
+//           : 'unknown';
+
+//         return (
+//           <DropdownMenu>
+//             <DropdownMenuTrigger asChild>
+//               <Button variant="ghost" className="h-8 w-8 p-0">
+//                 <span className="sr-only">Open menu</span>
+//                 <MoreHorizontal className="h-4 w-4" />
+//               </Button>
+//             </DropdownMenuTrigger>
+//             <DropdownMenuContent align="end">
+//               <DropdownMenuLabel>Actions</DropdownMenuLabel>
+//               <DropdownMenuItem asChild>
+//                 <Link href={`/vm/${vm.id}`}>View Details</Link>
+//               </DropdownMenuItem>
+//               <HistoryDialog vm={vm} />
+
+//               {isAdmin && (
+//                 <>
+//                   <DropdownMenuItem asChild>
+//                     <Link href={`/vm/${vm.id}/edit`}>Edit</Link>
+//                   </DropdownMenuItem>
+//                   {vm.bare_metal?.url && (
+//                     <DropdownMenuItem asChild>
+//                         <a href={vm.bare_metal.url} target="_blank" rel="noopener noreferrer">
+//                         Go to VM Manager
+//                         </a>
+//                     </DropdownMenuItem>
+//                   )}
+//                   <DropdownMenuSeparator />
+//                   {status === 'running' && (
+//                     <>
+//                       <DropdownMenuItem onClick={() => handleAction(vm.name, 'Stop')}>Stop</DropdownMenuItem>
+//                       <DropdownMenuItem onClick={() => handleAction(vm.name, 'Restart')}>Restart</DropdownMenuItem>
+//                     </>
+//                   )}
+//                   {status === 'stopped' && (
+//                     <DropdownMenuItem onClick={() => handleAction(vm.name, 'Start')}>Start</DropdownMenuItem>
+//                   )}
+//                   <DropdownMenuSeparator />
+//                   <ConfirmDeleteDialog
+//                     itemId={vm.id}
+//                     itemName={vm.name}
+//                     itemType="Virtual Machine"
+//                     deleteEndpoint={`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/virtual-machine`}
+//                     onActionSuccess={refreshData}
+//                   />
+//                 </>
+//               )}
+//             </DropdownMenuContent>
+//           </DropdownMenu>
+//         )
+//       },
+//     },
+//   ]
+// }
 
 // "use client"
 
