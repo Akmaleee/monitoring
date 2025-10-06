@@ -312,11 +312,6 @@ export default async function DashboardPage() {
                     </CardContent>
                   </div>
                 </CardContent>
-                <CardFooter>
-                  <div className="text-xs text-muted-foreground">
-                    Data refreshed on each request (server-side)
-                  </div>
-                </CardFooter>
               </Card>
             </Link>
 
@@ -398,11 +393,6 @@ export default async function DashboardPage() {
                     </CardContent>
                   </div>
                 </CardContent>
-                <CardFooter>
-                  <div className="text-xs text-muted-foreground">
-                    Click items for details in list pages
-                  </div>
-                </CardFooter>
               </Card>
             </Link>
           </div>
