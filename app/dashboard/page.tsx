@@ -236,7 +236,7 @@ export default async function DashboardPage() {
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <Server className="h-5 w-5 text-muted-foreground" />
-                    <CardTitle>Bare Metal Nodes</CardTitle>
+                    <CardTitle>Bare Metal</CardTitle>
                   </div>
                   <div className="flex w-full items-center justify-between">
                     <CardDescription>
