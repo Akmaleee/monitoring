@@ -1,7 +1,8 @@
+// Lokasi: components/login-form.tsx
+
 "use client";
 
 import { useState } from "react";
-// import Cookies from "js-cookie";
 import { setCookie } from "cookies-next";
 import { jwtDecode } from "jwt-decode";
 import { cn } from "@/lib/utils";
@@ -17,7 +18,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 
-// Definisikan tipe payload token
 interface DecodedToken {
   user: {
     role: { Role: { name: string } }[];
@@ -25,8 +25,8 @@ interface DecodedToken {
 }
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
-  const [username, setUsername] = useState("rinjani.putri");
-  const [password, setPassword] = useState("Putrijani1910@");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,16 +50,15 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       }
 
       const token = responseData.data.token;
-      setCookie("auth_token", token, { secure: true, sameSite: "strict" });
+      setCookie("auth_token", token, { sameSite: "strict" });
 
-      // Decode token dan simpan role
       try {
         const decodedToken = jwtDecode<DecodedToken>(token);
         const userRole = decodedToken.user?.role?.[0]?.Role?.name || "user";
-        setCookie("user_role", userRole, { secure: true, sameSite: "strict" });
+        setCookie("user_role", userRole, { sameSite: "strict" });
       } catch (e) {
         console.error("Failed to decode token, defaulting to 'user' role.", e);
-        setCookie("user_role", "user", { secure: true, sameSite: "strict" });
+        setCookie("user_role", "user", { sameSite: "strict" });
       }
 
       window.location.href = "/dashboard";
@@ -71,76 +70,376 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   };
 
   return (
-    <div
+    <Card 
       className={cn(
-        "flex min-h-screen items-center justify-center px-4",
+        "w-full border-none shadow-2xl rounded-2xl bg-white text-gray-900",
         className
-      )}
+      )} 
       {...props}
     >
-      <Card className="w-full max-w-md shadow-xl rounded-2xl">
-        <CardHeader className="space-y-2 text-center">
-          <CardTitle className="text-2xl font-bold">Login into Your Account</CardTitle>
-          <CardDescription>
-            Sign in to your account to continue
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                placeholder="yourid"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={isLoading}
-              />
+      <div className="flex flex-col items-center text-center md:hidden mb-6 pt-6">
+        <img
+            src="/logo.png"
+            alt="Logo Aplikasi"
+            width={180}
+            height={180}
+            className="rounded-full mb-4"
+        />
+        <h1 className="text-2xl font-bold">Welcome Back</h1>
+        <p className="text-gray-500 text-sm">Sign in to continue</p>
+      </div>
+      
+   
+      <CardHeader className="hidden md:flex space-y-2 text-center">
+        <CardTitle className="text-2xl font-bold ml-6 mt-5">Login into Your Account</CardTitle>
+      </CardHeader>
+      
+      <CardContent className="p-6 md:p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid gap-2">
+            <Label htmlFor="username">Username</Label>
+            <Input
+              id="username"
+              type="text"
+              placeholder="your-username"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={isLoading}
+              className="shadow-sm" 
+            />
+          </div>
+
+          <div className="grid gap-2 relative">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="********"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
+              className="shadow-sm"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 mt-3 text-gray-400 hover:text-gray-600 transition-colors"
+              tabIndex={-1}
+            >
+              {showPassword ? ( <EyeOff size={18} strokeWidth={1.5} /> ) : ( <Eye size={18} strokeWidth={1.5} /> )}
+            </button>
+          </div>
+
+          {error && (
+            <div className="flex items-center gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-600">
+              <AlertCircle size={16} />
+              <span>{error}</span>
             </div>
+          )}
 
-            <div className="grid gap-2 relative">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="********"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-10 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                tabIndex={-1}
-              >
-                {showPassword ? (
-                  <EyeOff size={18} strokeWidth={1.5} />
-                ) : (
-                  <Eye size={18} strokeWidth={1.5} />
-                )}
-              </button>
-            </div>
-
-            {error && (
-              <div className="flex items-center gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-600">
-                <AlertCircle size={16} />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Login"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+          <Button 
+            type="submit" 
+            className="w-full bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-900 dark:text-white dark:hover:bg-gray-800" 
+            disabled={isLoading}
+          >
+            {isLoading ? "Logging in..." : "Login"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
+
+// // Lokasi: components/login-form.tsx
+// "use client";
+
+// import { useState } from "react";
+// import { setCookie } from "cookies-next";
+// import { jwtDecode } from "jwt-decode";
+// import Image from "next/image"; // Import Image
+// import { cn } from "@/lib/utils";
+// import { Button } from "@/components/ui/button";
+// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+// import { Eye, EyeOff, AlertCircle } from "lucide-react";
+
+// interface DecodedToken {
+//   user: {
+//     role: { Role: { name: string } }[];
+//   };
+// }
+
+// export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
+//   const [username, setUsername] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
+//   const [isLoading, setIsLoading] = useState(false);
+
+//   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+//     event.preventDefault();
+//     setIsLoading(true);
+//     setError(null);
+
+//     try {
+//       const response = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/auth/login`, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ username, password }),
+//       });
+
+//       const responseData = await response.json();
+
+//       if (!response.ok || !responseData.data.token) {
+//         throw new Error(responseData.message || "Username atau password salah");
+//       }
+
+//       const token = responseData.data.token;
+//       setCookie("auth_token", token, { secure: true, sameSite: "strict" });
+
+//       try {
+//         const decodedToken = jwtDecode<DecodedToken>(token);
+//         const userRole = decodedToken.user?.role?.[0]?.Role?.name || "user";
+//         setCookie("user_role", userRole, { secure: true, sameSite: "strict" });
+//       } catch (e) {
+//         console.error("Failed to decode token, defaulting to 'user' role.", e);
+//         setCookie("user_role", "user", { secure: true, sameSite: "strict" });
+//       }
+
+//       window.location.href = "/dashboard";
+//     } catch (err: any) {
+//       setError(err.message);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   return (
+//     // Hapus wrapper div yang tidak perlu
+//     <Card className={cn("w-full border-none shadow-none bg-white text-gray-900", className)} {...props}>
+//       {/* Logo dan Judul untuk Tampilan Mobile */}
+//       <div className="flex flex-col items-center text-center md:hidden mb-6">
+//         <Image
+//             src="/logo.png"
+//             alt="Logo"
+//             width={180}
+//             height={180}
+//             className="rounded-full mb-4"
+//         />
+//         <h1 className="text-2xl font-bold">Welcome Back</h1>
+//         <p className="text-muted-foreground text-sm">Sign in to continue</p>
+//       </div>
+      
+//       {/* Judul untuk Tampilan Desktop */}
+//       <CardHeader className="hidden md:flex space-y-2 text-center">
+//         <CardTitle className="text-2xl font-bold text-center ml-7">Login into Your Account</CardTitle>
+//         {/* <CardDescription>
+//           Sign in to your account to continue
+//         </CardDescription> */}
+//       </CardHeader>
+      
+//       <CardContent className="p-0 md:p-6 md:pt-0">
+//         <form onSubmit={handleSubmit} className="space-y-6">
+//           <div className="grid gap-2">
+//             <Label htmlFor="username">Username</Label>
+//             <Input
+//               id="username"
+//               type="text"
+//               placeholder="yourid"
+//               required
+//               value={username}
+//               onChange={(e) => setUsername(e.target.value)}
+//               disabled={isLoading}
+//             />
+//           </div>
+
+//           <div className="grid gap-2 relative">
+//             <Label htmlFor="password">Password</Label>
+//             <Input
+//               id="password"
+//               type={showPassword ? "text" : "password"}
+//               placeholder="********"
+//               required
+//               value={password}
+//               onChange={(e) => setPassword(e.target.value)}
+//               disabled={isLoading}
+//             />
+//             <button
+//               type="button"
+//               onClick={() => setShowPassword(!showPassword)}
+//               className="absolute right-3 top-1/2 transform -translate-y-1/2 mt-3 text-muted-foreground hover:text-foreground transition-colors"
+//               tabIndex={-1}
+//             >
+//               {showPassword ? (
+//                 <EyeOff size={18} strokeWidth={1.5} />
+//               ) : (
+//                 <Eye size={18} strokeWidth={1.5} />
+//               )}
+//             </button>
+//           </div>
+
+//           {error && (
+//             <div className="flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+//               <AlertCircle size={16} />
+//               <span>{error}</span>
+//             </div>
+//           )}
+
+//           <Button type="submit" className="w-full" disabled={isLoading}>
+//             {isLoading ? "Logging in..." : "Login"}
+//           </Button>
+//         </form>
+//       </CardContent>
+//     </Card>
+//   );
+// }
+
+// "use client";
+
+// import { useState } from "react";
+// // import Cookies from "js-cookie";
+// import { setCookie } from "cookies-next";
+// import { jwtDecode } from "jwt-decode";
+// import { cn } from "@/lib/utils";
+// import { Button } from "@/components/ui/button";
+// import {
+//   Card,
+//   CardContent,
+//   CardDescription,
+//   CardHeader,
+//   CardTitle,
+// } from "@/components/ui/card";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+// import { Eye, EyeOff, AlertCircle } from "lucide-react";
+
+// // Definisikan tipe payload token
+// interface DecodedToken {
+//   user: {
+//     role: { Role: { name: string } }[];
+//   };
+// }
+
+// export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
+//   const [username, setUsername] = useState("rinjani.putri");
+//   const [password, setPassword] = useState("Putrijani1910@");
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
+//   const [isLoading, setIsLoading] = useState(false);
+
+//   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+//     event.preventDefault();
+//     setIsLoading(true);
+//     setError(null);
+
+//     try {
+//       const response = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/auth/login`, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ username, password }),
+//       });
+
+//       const responseData = await response.json();
+
+//       if (!response.ok || !responseData.data.token) {
+//         throw new Error(responseData.message || "Username atau password salah");
+//       }
+
+//       const token = responseData.data.token;
+//       setCookie("auth_token", token, { secure: true, sameSite: "strict" });
+
+//       // Decode token dan simpan role
+//       try {
+//         const decodedToken = jwtDecode<DecodedToken>(token);
+//         const userRole = decodedToken.user?.role?.[0]?.Role?.name || "user";
+//         setCookie("user_role", userRole, { secure: true, sameSite: "strict" });
+//       } catch (e) {
+//         console.error("Failed to decode token, defaulting to 'user' role.", e);
+//         setCookie("user_role", "user", { secure: true, sameSite: "strict" });
+//       }
+
+//       window.location.href = "/dashboard";
+//     } catch (err: any) {
+//       setError(err.message);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div
+//       className={cn(
+//         "flex min-h-screen items-center justify-center px-4",
+//         className
+//       )}
+//       {...props}
+//     >
+//       <Card className="w-full max-w-md shadow-xl rounded-2xl">
+//         <CardHeader className="space-y-2 text-center">
+//           <CardTitle className="text-2xl font-bold">Login into Your Account</CardTitle>
+//           <CardDescription>
+//             Sign in to your account to continue
+//           </CardDescription>
+//         </CardHeader>
+//         <CardContent>
+//           <form onSubmit={handleSubmit} className="space-y-6">
+//             <div className="grid gap-2">
+//               <Label htmlFor="username">Username</Label>
+//               <Input
+//                 id="username"
+//                 type="text"
+//                 placeholder="yourid"
+//                 required
+//                 value={username}
+//                 onChange={(e) => setUsername(e.target.value)}
+//                 disabled={isLoading}
+//               />
+//             </div>
+
+//             <div className="grid gap-2 relative">
+//               <Label htmlFor="password">Password</Label>
+//               <Input
+//                 id="password"
+//                 type={showPassword ? "text" : "password"}
+//                 placeholder="********"
+//                 required
+//                 value={password}
+//                 onChange={(e) => setPassword(e.target.value)}
+//                 disabled={isLoading}
+//               />
+//               <button
+//                 type="button"
+//                 onClick={() => setShowPassword(!showPassword)}
+//                 className="absolute right-3 top-10 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+//                 tabIndex={-1}
+//               >
+//                 {showPassword ? (
+//                   <EyeOff size={18} strokeWidth={1.5} />
+//                 ) : (
+//                   <Eye size={18} strokeWidth={1.5} />
+//                 )}
+//               </button>
+//             </div>
+
+//             {error && (
+//               <div className="flex items-center gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-600">
+//                 <AlertCircle size={16} />
+//                 <span>{error}</span>
+//               </div>
+//             )}
+
+//             <Button type="submit" className="w-full" disabled={isLoading}>
+//               {isLoading ? "Logging in..." : "Login"}
+//             </Button>
+//           </form>
+//         </CardContent>
+//       </Card>
+//     </div>
+//   );
+// }
 
 
 // "use client";

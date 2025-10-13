@@ -62,10 +62,17 @@ export function middleware(request: NextRequest) {
   return NextResponse.next()
 }
 
+// export const config = {
+//   matcher: [
+//     '/((?!api|_next/static|_next/image|favicon.ico).*)',
+//   ],
+// }
+
 export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico?)$).*)'],
+  
+    // Jalankan untuk semua path kecuali yang di bawah ini
+ 
 }
 
 // import { NextResponse } from 'next/server'

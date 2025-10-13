@@ -120,3 +120,23 @@
     @apply bg-background text-foreground;
   }
 }
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: 
+    linear-gradient(to right, oklch(from var(--border) l c h / 5%) 1px, transparent 1px), 
+    linear-gradient(to bottom, oklch(from var(--border) l c h / 5%) 1px, transparent 1px);
+  background-size: 3rem 3rem;
+  animation: move-grid 200s linear infinite;
+  -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+}
+
+@keyframes move-grid {
+  0% { background-position: 0 0; }
+  100% { background-position: 3rem 3rem; }
+}
