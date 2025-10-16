@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { cookies } from "next/headers";
 import {
@@ -10,7 +9,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Server, Cpu } from "lucide-react";
+import { Server, Cpu, HardDrive } from "lucide-react"; // Import HardDrive icon
 
 // RefreshButton removed — timestamps displayed only
 
@@ -79,13 +78,15 @@ export default async function DashboardPage() {
   }
 
   try {
-    const [bareRes, vmRes] = await Promise.all([
+    const [bareRes, vmRes, bareNodeRes] = await Promise.all([
       fetchJson(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal`, token),
       fetchJson(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/virtual-machine`, token),
+      fetchJson(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal/node`, token),
     ]);
 
     const bareList = normalizeArray(bareRes);
     const vmList = normalizeArray(vmRes);
+    const bareNodeList = normalizeArray(bareNodeRes);
 
     const totalBare = bareList.length;
 
@@ -167,12 +168,22 @@ export default async function DashboardPage() {
     }).length;
     const inactiveVm = totalVm - activeVm;
 
+    const totalBareNodes = bareNodeList.length;
+    const onlineBareNodes = bareNodeList.filter(
+      (n: any) => n.status === "online"
+    ).length;
+    const offlineBareNodes = totalBareNodes - onlineBareNodes;
+
     const bareActivePct =
       totalBare > 0
         ? Math.round((activeBare / totalBare) * 100)
         : 0;
     const vmActivePct =
       totalVm > 0 ? Math.round((activeVm / totalVm) * 100) : 0;
+    const bareNodeActivePct =
+      totalBareNodes > 0
+        ? Math.round((onlineBareNodes / totalBareNodes) * 100)
+        : 0;
 
     const vmStatusCounts = vmList.reduce((acc: any, v: any) => {
       // 🚀 Perbaikan Status VM: Normalisasi dan ubah angka panjang menjadi "unknown"
@@ -224,13 +235,19 @@ export default async function DashboardPage() {
       {},
     );
 
+    const bareNodeStatusCounts = bareNodeList.reduce((acc: any, n: any) => {
+      const s = normalizeAndFilterStatus(n.status);
+      acc[s] = (acc[s] || 0) + 1;
+      return acc;
+    }, {});
+
     const nowServer = new Date();
 
     return (
       <div className="min-h-screen bg-background text-foreground">
         <div className="container mx-auto py-10">
           <h1 className="mb-6 text-2xl font-bold">Dashboard</h1>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             <Link href="/bare-metal" className="block">
               <Card className="transition-shadow hover:shadow-lg">
                 <CardHeader>
@@ -395,6 +412,89 @@ export default async function DashboardPage() {
                 </CardContent>
               </Card>
             </Link>
+
+            {/* Card Bare Metal Nodes */}
+            <Link href="/bare-metal" className="block">
+              <Card className="transition-shadow hover:shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <HardDrive className="h-5 w-5 text-muted-foreground" />
+                    <CardTitle>Bare Metal Nodes</CardTitle>
+                  </div>
+                  <div className="flex w-full items-center justify-between">
+                    <CardDescription>Overview of nodes</CardDescription>
+                    <div className="flex items-center gap-2">
+                      <div className="text-xs text-muted-foreground">
+                        {nowServer.toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-baseline gap-6">
+                      <div>
+                        <div className="text-sm text-muted-foreground">
+                          Total
+                        </div>
+                        <div className="text-3xl font-extrabold">
+                          {totalBareNodes}
+                        </div>
+                      </div>
+                      <div className="ml-auto flex items-center gap-2">
+                        <Badge className="bg-green-600 text-white hover:bg-green-700">
+                          Online{" "}
+                          <span className="ml-2 font-semibold">
+                            {onlineBareNodes}
+                          </span>
+                        </Badge>
+                        <Badge className="bg-secondary text-secondary-foreground hover:bg-secondary/80">
+                          Offline{" "}
+                          <span className="ml-2 font-semibold">
+                            {offlineBareNodes}
+                          </span>
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+                        <div>Online ratio</div>
+                        <div className="font-medium">
+                          {bareNodeActivePct}%
+                        </div>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-muted">
+                        <div
+                          className="h-2 rounded-full bg-green-500 transition-all duration-700 ease-out"
+                          style={{ width: `${bareNodeActivePct}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <CardContent className="pt-0">
+                      <div className="flex gap-3 text-sm text-muted-foreground">
+                        {Object.entries(bareNodeStatusCounts)
+                          .slice(0, 5)
+                          .map(([k, v]) => (
+                            <div
+                              key={k}
+                              className="inline-flex items-center gap-2"
+                            >
+                              <Badge variant="secondary" className="lowercase">
+                                {k}
+                              </Badge>
+                              <span className="font-medium text-foreground">
+                                {String(v)}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </CardContent>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
       </div>
@@ -412,6 +512,421 @@ export default async function DashboardPage() {
     );
   }
 }
+
+
+// import Link from "next/link";
+// import { cookies } from "next/headers";
+// import {
+//   Card,
+//   CardHeader,
+//   CardTitle,
+//   CardDescription,
+//   CardContent,
+//   CardFooter,
+// } from "@/components/ui/card";
+// import { Badge } from "@/components/ui/badge";
+// import { Server, Cpu } from "lucide-react";
+
+// // RefreshButton removed — timestamps displayed only
+
+// async function fetchJson(url: string, token: string) {
+//   const res = await fetch(url, {
+//     cache: "no-store",
+//     headers: { Authorization: `Bearer ${token}` },
+//   });
+
+//   if (!res.ok) {
+//     const text = await res.text().catch(() => "");
+//     if (res.status === 401 || res.status === 403) {
+//       // Make it explicit so caller can handle auth expiration
+//       throw new Error(`Token is invalid or expired (${res.status}): ${text}`);
+//     }
+//     throw new Error(`Fetch ${url} failed: ${res.status} ${res.statusText} ${text}`);
+//   }
+
+//   const parsed = await res.json().catch(() => null);
+//   return parsed;
+// }
+
+// function normalizeArray(v: any) {
+//   if (!v) return [];
+//   if (Array.isArray(v)) return v;
+//   if (v.data && Array.isArray(v.data)) return v.data;
+//   return [];
+// }
+
+// /**
+//  * Helper untuk menormalkan string status dan mengubah angka panjang menjadi "unknown".
+//  * @param status Status mentah dari data.
+//  * @returns Status yang dinormalisasi ("running", "unknown", dll.).
+//  */
+// function normalizeAndFilterStatus(status: any): string {
+//   let s = (status || "unknown").toString().toLowerCase();
+
+//   // Cek jika string status adalah angka penuh yang panjang (kemungkinan timestamp atau ID)
+//   // Ekspresi /^\d+$/ memastikan string hanya berisi angka.
+//   if (/^\d+$/.test(s) && s.length > 6) {
+//     return "unknown"; 
+//   }
+
+//   return s;
+// }
+
+// export default async function DashboardPage() {
+//   const cookieStore = await cookies();
+//   const token = cookieStore.get("auth_token")?.value;
+
+//   if (!token) {
+//     return (
+//       <div className="min-h-screen bg-background text-foreground">
+//         <div className="container mx-auto py-10">
+//           <h1 className="text-2xl font-bold">Dashboard</h1>
+//           <p className="mt-4">
+//             Authentication required. Please{" "}
+//             <Link href="/login" className="text-blue-500 hover:underline">
+//               login
+//             </Link>
+//             .
+//           </p>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   try {
+//     const [bareRes, vmRes] = await Promise.all([
+//       fetchJson(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/bare-metal`, token),
+//       fetchJson(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/virtual-machine`, token),
+//     ]);
+
+//     const bareList = normalizeArray(bareRes);
+//     const vmList = normalizeArray(vmRes);
+
+//     const totalBare = bareList.length;
+
+//     const activeBare = bareList.filter((b: any) => {
+//       const nodes =
+//         b.bare_metal_node || b.bare_metal_nodes || b.nodes || [];
+//       if (Array.isArray(nodes) && nodes.length > 0) {
+//         for (const node of nodes) {
+//           const statusArr =
+//             node.BareMetalNodeStatus ||
+//             node.bare_metal_node_status ||
+//             node.status_history ||
+//             node.statuses ||
+//             [];
+//           if (Array.isArray(statusArr) && statusArr.length > 0) {
+//             const last = statusArr[statusArr.length - 1];
+//             const s = (
+//               last?.status || last?.state || ""
+//             )
+//               .toString()
+//               .toLowerCase();
+//             if (
+//               s &&
+//               s !== "offline" &&
+//               s !== "unknown" &&
+//               s !== "down"
+//             )
+//               return true;
+//           }
+
+//           const direct = (node.status || node.state || "")
+//             .toString()
+//             .toLowerCase();
+//           if (
+//             direct &&
+//             direct !== "offline" &&
+//             direct !== "unknown" &&
+//             direct !== "down"
+//           )
+//             return true;
+//         }
+//         return false;
+//       }
+
+//       const top = (
+//         b.status ||
+//         b.state ||
+//         b.is_active ||
+//         ""
+//       )
+//         .toString()
+//         .toLowerCase();
+//       if (top === "true") return true;
+//       if (
+//         top &&
+//         top !== "offline" &&
+//         top !== "unknown" &&
+//         top !== "down" &&
+//         top !== "false"
+//       )
+//         return true;
+//       return false;
+//     }).length;
+
+//     const inactiveBare = totalBare - activeBare;
+
+//     const totalVm = vmList.length;
+//     const activeVm = vmList.filter((v: any) => {
+//       const s = (
+//         v.virtual_machine_status?.status ||
+//         v.status ||
+//         ""
+//       )
+//         .toString()
+//         .toLowerCase();
+//       return (
+//         s === "running" || s === "online" || s === "active"
+//       );
+//     }).length;
+//     const inactiveVm = totalVm - activeVm;
+
+//     const bareActivePct =
+//       totalBare > 0
+//         ? Math.round((activeBare / totalBare) * 100)
+//         : 0;
+//     const vmActivePct =
+//       totalVm > 0 ? Math.round((activeVm / totalVm) * 100) : 0;
+
+//     const vmStatusCounts = vmList.reduce((acc: any, v: any) => {
+//       // 🚀 Perbaikan Status VM: Normalisasi dan ubah angka panjang menjadi "unknown"
+//       const s = normalizeAndFilterStatus(
+//         v.virtual_machine_status?.status || v.status
+//       );
+
+//       acc[s] = (acc[s] || 0) + 1;
+//       return acc;
+//     }, {});
+
+//     const bareStatusCounts = bareList.reduce(
+//       (acc: any, b: any) => {
+//         const nodes =
+//           b.bare_metal_node || b.bare_metal_nodes || b.nodes || [];
+//         if (Array.isArray(nodes) && nodes.length > 0) {
+//           for (const node of nodes) {
+//             const statusArr =
+//               node.BareMetalNodeStatus ||
+//               node.bare_metal_node_status ||
+//               node.status_history ||
+//               node.statuses ||
+//               [];
+//             if (Array.isArray(statusArr) && statusArr.length > 0) {
+//               const last = statusArr[statusArr.length - 1];
+//               // 🚀 Perbaikan: Normalisasi status dari statusArr
+//               const s = normalizeAndFilterStatus(
+//                 last?.status || last?.state
+//               );
+//               acc[s] = (acc[s] || 0) + 1;
+//               continue;
+//             }
+
+//             // 🚀 Perbaikan: Normalisasi status dari direct field
+//             const direct = normalizeAndFilterStatus(
+//               node.status || node.state
+//             );
+//             acc[direct] = (acc[direct] || 0) + 1;
+//           }
+//         } else {
+//           // 🚀 Perbaikan: Normalisasi status dari top level
+//           const top = normalizeAndFilterStatus(
+//             b.status || b.state
+//           );
+//           acc[top] = (acc[top] || 0) + 1;
+//         }
+//         return acc;
+//       },
+//       {},
+//     );
+
+//     const nowServer = new Date();
+
+//     return (
+//       <div className="min-h-screen bg-background text-foreground">
+//         <div className="container mx-auto py-10">
+//           <h1 className="mb-6 text-2xl font-bold">Dashboard</h1>
+//           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+//             <Link href="/bare-metal" className="block">
+//               <Card className="transition-shadow hover:shadow-lg">
+//                 <CardHeader>
+//                   <div className="flex items-center gap-3">
+//                     <Server className="h-5 w-5 text-muted-foreground" />
+//                     <CardTitle>Bare Metal</CardTitle>
+//                   </div>
+//                   <div className="flex w-full items-center justify-between">
+//                     <CardDescription>
+//                       Overview of bare metal servers
+//                     </CardDescription>
+//                     <div className="flex items-center gap-2">
+//                       <div className="text-xs text-muted-foreground">
+//                         {nowServer.toLocaleString()}
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </CardHeader>
+//                 <CardContent>
+//                   <div className="flex flex-col gap-4">
+//                     <div className="flex items-baseline gap-6">
+//                       <div>
+//                         <div className="text-sm text-muted-foreground">
+//                           Total
+//                         </div>
+//                         <div className="text-3xl font-extrabold">
+//                           {totalBare}
+//                         </div>
+//                       </div>
+//                       <div className="ml-auto flex items-center gap-2">
+//                         <Badge className="bg-green-600 text-white hover:bg-green-700">
+//                           Active{" "}
+//                           <span className="ml-2 font-semibold">
+//                             {activeBare}
+//                           </span>
+//                         </Badge>
+//                         <Badge className="bg-secondary text-secondary-foreground hover:bg-secondary/80">
+//                           Inactive{" "}
+//                           <span className="ml-2 font-semibold">
+//                             {inactiveBare}
+//                           </span>
+//                         </Badge>
+//                       </div>
+//                     </div>
+
+//                     <div>
+//                       <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+//                         <div>Active ratio</div>
+//                         <div className="font-medium">
+//                           {bareActivePct}%
+//                         </div>
+//                       </div>
+//                       <div className="h-2 w-full rounded-full bg-muted">
+//                         <div
+//                           className="h-2 rounded-full bg-green-500 transition-all duration-700 ease-out"
+//                           style={{ width: `${bareActivePct}%` }}
+//                         />
+//                       </div>
+//                     </div>
+
+//                     <CardContent className="pt-0">
+//                       <div className="flex gap-3 text-sm text-muted-foreground">
+//                         {Object.entries(bareStatusCounts)
+//                           .slice(0, 5)
+//                           .map(([k, v]) => (
+//                             <div
+//                               key={k}
+//                               className="inline-flex items-center gap-2"
+//                             >
+//                               <Badge variant="secondary" className="lowercase">
+//                                 {k}
+//                               </Badge>
+//                               <span className="font-medium text-foreground">
+//                                 {String(v)}
+//                               </span>
+//                             </div>
+//                           ))}
+//                       </div>
+//                     </CardContent>
+//                   </div>
+//                 </CardContent>
+//               </Card>
+//             </Link>
+
+//             {/* Card Virtual Machines */}
+//             <Link href="/vm" className="block">
+//               <Card className="transition-shadow hover:shadow-lg">
+//                 <CardHeader>
+//                   <div className="flex items-center gap-3">
+//                     <Cpu className="h-5 w-5 text-muted-foreground" />
+//                     <CardTitle>Virtual Machines</CardTitle>
+//                   </div>
+//                   <div className="flex w-full items-center justify-between">
+//                     <CardDescription>Overview of VMs</CardDescription>
+//                     <div className="flex items-center gap-2">
+//                       <div className="text-xs text-muted-foreground">
+//                         {nowServer.toLocaleString()}
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </CardHeader>
+//                 <CardContent>
+//                   <div className="flex flex-col gap-4">
+//                     <div className="flex items-baseline gap-6">
+//                       <div>
+//                         <div className="text-sm text-muted-foreground">
+//                           Total
+//                         </div>
+//                         <div className="text-3xl font-extrabold">
+//                           {totalVm}
+//                         </div>
+//                       </div>
+//                       <div className="ml-auto flex items-center gap-2">
+//                         <Badge className="bg-green-600 text-white hover:bg-green-700">
+//                           Active{" "}
+//                           <span className="ml-2 font-semibold">
+//                             {activeVm}
+//                           </span>
+//                         </Badge>
+//                         <Badge className="bg-secondary text-secondary-foreground hover:bg-secondary/80">
+//                           Inactive{" "}
+//                           <span className="ml-2 font-semibold">
+//                             {inactiveVm}
+//                           </span>
+//                         </Badge>
+//                       </div>
+//                     </div>
+
+//                     <div>
+//                       <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+//                         <div>Active ratio</div>
+//                         <div className="font-medium">{vmActivePct}%</div>
+//                       </div>
+//                       <div className="h-2 w-full rounded-full bg-muted">
+//                         <div
+//                           className="h-2 rounded-full bg-green-500 transition-all duration-700 ease-out"
+//                           style={{ width: `${vmActivePct}%` }}
+//                         />
+//                       </div>
+//                     </div>
+
+//                     <CardContent className="pt-0">
+//                       <div className="flex gap-3 text-sm text-muted-foreground">
+//                         {Object.entries(vmStatusCounts)
+//                           .slice(0, 5)
+//                           .map(([k, v]) => (
+//                             <div
+//                               key={k}
+//                               className="inline-flex items-center gap-2"
+//                             >
+//                               <Badge variant="secondary" className="lowercase">
+//                                 {k}
+//                               </Badge>
+//                               <span className="font-medium text-foreground">
+//                                 {String(v)}
+//                               </span>
+//                             </div>
+//                           ))}
+//                       </div>
+//                     </CardContent>
+//                   </div>
+//                 </CardContent>
+//               </Card>
+//             </Link>
+//           </div>
+//         </div>
+//       </div>
+//     );
+//   } catch (err: any) {
+//     return (
+//       <div className="min-h-screen bg-background text-foreground">
+//         <div className="container mx-auto py-10">
+//           <h1 className="text-2xl font-bold">Dashboard</h1>
+//           <p className="mt-4 text-red-500">
+//             Error loading counts: {String(err?.message || err)}
+//           </p>
+//         </div>
+//       </div>
+//     );
+//   }
+// }
 
 // import Link from "next/link";
 // import { cookies } from "next/headers";

@@ -103,7 +103,7 @@ export function ConfirmDeleteDialog({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your current password"
-            autoComplete="current-password"
+            autoComplete="new-password"
           />
         </div>
         <DialogFooter>
