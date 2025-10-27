@@ -202,7 +202,7 @@ export function AppSidebar() {
             <SidebarMenuButton
               asChild
               className={`justify-start ${
-                isActive ? "bg-secondary" : "hover:bg-muted"
+                isActive ? "bg-secondary" : "hover:bg-secondary"
               }`}
             >
               <Link href={item.url}>
@@ -221,7 +221,7 @@ export function AppSidebar() {
       <Sidebar>
         <SidebarContent className="flex h-full flex-col justify-between">
           <div>
-            <div className="flex items-center gap-x-3 border-b px-4 py-3.5">
+            <div className="flex items-center gap-x-3 border-b-[color:var(--sidebar-border)] px-4 py-3.5">
               <img
                 src="/logo_tsat.png"
                 alt="TSAT Logo"
