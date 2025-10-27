@@ -26,7 +26,7 @@ export default function Page() {
         </div>
 
         {/* Kolom Kanan */}
-        <div className="flex items-center justify-center p-6 md:p-10 bg-red-600">
+        <div className="flex items-center justify-center p-6 md:p-10 bg-gray-700">
           <div className="w-full max-w-sm">
             <LoginForm />
           </div>

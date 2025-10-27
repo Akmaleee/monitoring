@@ -14,6 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { EditUserDialog } from "./edit-user-dialog"
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
+import { cn } from "@/lib/utils"; // <-- Impor cn
 
 export type User = {
   id: number
@@ -49,7 +50,8 @@ export const getColumns = (
     header: "Role",
     cell: ({ row }) => {
       const roles = row.original.role.map(r => r.Role.name).join(", ");
-      return <Badge>{roles}</Badge>;
+      // Gunakan kelas 'capitalize' jika ingin huruf depan besar
+      return <Badge className="capitalize">{roles}</Badge>;
     },
   },
   {
@@ -57,7 +59,19 @@ export const getColumns = (
     header: "Status",
     cell: ({ row }) => {
       const isActive = row.getValue("is_active");
-      return isActive ? <Badge>Active</Badge> : <Badge variant="secondary">Inactive</Badge>;
+      return (
+          <Badge
+            // Gunakan cn untuk menggabungkan kelas secara kondisional
+            className={cn(
+              isActive
+                ? "bg-green-600 text-white hover:bg-green-700" // Kelas untuk status Active
+                : "" // Biarkan kosong agar variant="secondary" dari else yang bekerja
+            )}
+            variant={isActive ? "default" : "secondary"} // Tetap gunakan variant secondary untuk Inactive
+          >
+            {isActive ? "Active" : "Inactive"}
+          </Badge>
+      );
     },
   },
   {
@@ -75,14 +89,13 @@ export const getColumns = (
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
                   <EditUserDialog user={user} onUserUpdated={onUpdate} />
                   <DropdownMenuSeparator />
-                  {/* PERUBAHAN DI SINI: requirePassword diatur menjadi false */}
                   <ConfirmDeleteDialog
                     itemId={user.id}
                     itemName={user.name}
                     itemType="User"
                     deleteEndpoint={`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/users`}
                     onActionSuccess={onUpdate}
-                    requirePassword={false} 
+                    requirePassword={false}
                   />
               </DropdownMenuContent>
             </DropdownMenu>

@@ -100,6 +100,9 @@ const menuItems = [
   },
 ]
 
+// Durasi validitas verifikasi (harus sama dengan yang ada di halaman user-management dan verify)
+const VERIFICATION_VALIDITY_MS = 5 * 60 * 1000; // 5 minutes
+
 const findActiveGroups = (items: any[], currentPath: string): string[] => {
   for (const item of items) {
     if (item.items) {
@@ -127,14 +130,16 @@ export function AppSidebar() {
     const [isVerifyOpen, setIsVerifyOpen] = useState(false);
     const [password, setPassword] = useState("");
     const [isVerifying, setIsVerifying] = useState(false);
-  
+
     useEffect(() => {
       setHasMounted(true)
     }, [])
-  
+
     const handleLogout = () => {
       deleteCookie("auth_token")
       deleteCookie("user_role")
+      // Hapus juga status verifikasi saat logout
+      sessionStorage.removeItem('user_management_verified_at');
       window.location.href = "/login"
     }
 
@@ -142,7 +147,7 @@ export function AppSidebar() {
         setIsVerifying(true);
         const toastId = toast.loading("Verifying password...");
         const token = getCookie('auth_token');
-    
+
         try {
           const response = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/users/verify-password`, {
             method: 'POST',
@@ -152,15 +157,22 @@ export function AppSidebar() {
             },
             body: JSON.stringify({ password }),
           });
-    
+
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || "Password verification failed.");
           }
-    
+
           toast.success("Password verified!", { id: toastId });
           setIsVerifyOpen(false);
-          window.location.href = "/user-management";
+
+          // --->>> PENAMBAHAN BARIS INI <<<---
+          // Simpan timestamp verifikasi ke sessionStorage
+          sessionStorage.setItem('user_management_verified_at', Date.now().toString());
+          // --->>> AKHIR PENAMBAHAN <<<---
+
+          window.location.href = "/user-management"; // Navigasi setelah verifikasi
+
         } catch (err: any) {
           toast.error("Verification Failed", { id: toastId, description: err.message });
         } finally {
@@ -168,7 +180,7 @@ export function AppSidebar() {
           setPassword("");
         }
       };
-  
+
     const renderMenu = (items: any[]) => {
       return items.map((item) => {
         if (item.items) {
@@ -192,17 +204,17 @@ export function AppSidebar() {
             </AccordionItem>
           )
         }
-  
+
         const isActive =
           item.url === pathname ||
           (item.url !== "/" && pathname.startsWith(item.url))
-  
+
         return (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton
               asChild
               className={`justify-start ${
-                isActive ? "bg-secondary" : "hover:bg-secondary"
+                isActive ? "bg-secondary" : "hover:bg-secondary" // Konsisten pakai bg-secondary
               }`}
             >
               <Link href={item.url}>
@@ -214,9 +226,9 @@ export function AppSidebar() {
         )
       })
     }
-  
+
     if (!hasMounted) return null
-  
+
     return (
       <Sidebar>
         <SidebarContent className="flex h-full flex-col justify-between">
@@ -244,7 +256,7 @@ export function AppSidebar() {
               </SidebarGroupContent>
             </SidebarGroup>
           </div>
-  
+
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -265,6 +277,7 @@ export function AppSidebar() {
                                 To access user management, please enter your current password.
                             </DialogDescription>
                         </DialogHeader>
+                        {/* Ganti form dengan struktur div biasa untuk kontrol lebih baik */}
                         <div className="grid gap-4 py-4">
                             <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="password-verify" className="text-right">
@@ -277,7 +290,7 @@ export function AppSidebar() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="col-span-3"
                                 placeholder="Enter your current password"
-                                autoComplete="new-password"
+                                autoComplete="current-password" // Gunakan current-password
                             />
                             </div>
                         </div>
@@ -293,7 +306,7 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <ThemeToggle />
                 </SidebarMenuItem>
-  
+
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <SidebarMenuItem>
@@ -328,6 +341,338 @@ export function AppSidebar() {
       </Sidebar>
     )
   }
+
+
+// "use client"
+
+// import { usePathname } from "next/navigation"
+// import Link from "next/link"
+// import { deleteCookie, getCookie } from "cookies-next";
+// import { useState, useEffect } from "react"
+// import dynamic from "next/dynamic"
+// import { Button } from "@/components/ui/button";
+
+// import {
+//   LayoutDashboard,
+//   Server,
+//   Monitor,
+//   Network,
+//   Database,
+//   LogOut,
+//   Users,
+// } from "lucide-react"
+
+// import {
+//   Accordion,
+//   AccordionContent,
+//   AccordionItem,
+//   AccordionTrigger,
+// } from "@/components/ui/accordion"
+
+// import {
+//   AlertDialog,
+//   AlertDialogAction,
+//   AlertDialogCancel,
+//   AlertDialogContent,
+//   AlertDialogDescription,
+//   AlertDialogFooter,
+//   AlertDialogHeader,
+//   AlertDialogTitle,
+//   AlertDialogTrigger,
+// } from "@/components/ui/alert-dialog"
+
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogDescription,
+//   DialogFooter,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogTrigger,
+// } from "@/components/ui/dialog";
+
+// import {
+//   Sidebar,
+//   SidebarContent,
+//   SidebarGroup,
+//   SidebarGroupContent,
+//   SidebarGroupLabel,
+//   SidebarMenu,
+//   SidebarMenuItem,
+//   SidebarMenuButton,
+// } from "@/components/ui/sidebar"
+// import { useUserRole } from "@/hooks/use-user-role";
+// import { toast } from "sonner";
+// import { Input } from "./ui/input";
+// import { Label } from "./ui/label";
+
+// const ThemeToggle = dynamic(() => import("@/components/theme-toggle"), {
+//   ssr: false,
+// })
+
+// const menuItems = [
+//   {
+//     title: "Dashboard",
+//     url: "/dashboard",
+//     icon: LayoutDashboard,
+//   },
+//   {
+//     title: "IT Infra",
+//     icon: Network,
+//     items: [
+//       {
+//         title: "Baremetal",
+//         url: "/bare-metal",
+//         icon: Server,
+//       },
+//       {
+//         title: "VM",
+//         url: "/vm",
+//         icon: Monitor,
+//       },
+//       {
+//         title: "NMS",
+//         icon: Database,
+//         items: [
+//           {
+//             title: "Zabbix",
+//             url: "/zabbix",
+//             icon: () => <div className="w-4 h-4" />,
+//           },
+//         ],
+//       },
+//     ],
+//   },
+// ]
+
+// const findActiveGroups = (items: any[], currentPath: string): string[] => {
+//   for (const item of items) {
+//     if (item.items) {
+//       const isAnyChildActive = item.items.some(
+//         (subItem: any) => subItem.url && currentPath.startsWith(subItem.url)
+//       )
+//       if (isAnyChildActive) {
+//         const nestedGroups = findActiveGroups(item.items, currentPath)
+//         return [item.title, ...nestedGroups]
+//       }
+//       const nestedGroups = findActiveGroups(item.items, currentPath)
+//       if (nestedGroups.length > 0) {
+//         return [item.title, ...nestedGroups]
+//       }
+//     }
+//   }
+//   return []
+// }
+
+// export function AppSidebar() {
+//     const pathname = usePathname()
+//     const { isAdmin } = useUserRole();
+//     const activeGroups = findActiveGroups(menuItems, pathname)
+//     const [hasMounted, setHasMounted] = useState(false)
+//     const [isVerifyOpen, setIsVerifyOpen] = useState(false);
+//     const [password, setPassword] = useState("");
+//     const [isVerifying, setIsVerifying] = useState(false);
+  
+//     useEffect(() => {
+//       setHasMounted(true)
+//     }, [])
+  
+//     const handleLogout = () => {
+//       deleteCookie("auth_token")
+//       deleteCookie("user_role")
+//       window.location.href = "/login"
+//     }
+
+//     const handleVerifyPassword = async () => {
+//         setIsVerifying(true);
+//         const toastId = toast.loading("Verifying password...");
+//         const token = getCookie('auth_token');
+    
+//         try {
+//           const response = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_BACKEND}/users/verify-password`, {
+//             method: 'POST',
+//             headers: {
+//               'Content-Type': 'application/json',
+//               'Authorization': `Bearer ${token}`,
+//             },
+//             body: JSON.stringify({ password }),
+//           });
+    
+//           if (!response.ok) {
+//             const errorData = await response.json();
+//             throw new Error(errorData.message || "Password verification failed.");
+//           }
+    
+//           toast.success("Password verified!", { id: toastId });
+//           setIsVerifyOpen(false);
+//           window.location.href = "/user-management";
+//         } catch (err: any) {
+//           toast.error("Verification Failed", { id: toastId, description: err.message });
+//         } finally {
+//           setIsVerifying(false);
+//           setPassword("");
+//         }
+//       };
+  
+//     const renderMenu = (items: any[]) => {
+//       return items.map((item) => {
+//         if (item.items) {
+//           return (
+//             <AccordionItem key={item.title} value={item.title} className="border-none">
+//               <AccordionTrigger className="px-2 py-2 hover:no-underline">
+//                 <div className="flex items-center gap-x-3">
+//                   <item.icon className="h-4 w-4" />
+//                   <span>{item.title}</span>
+//                 </div>
+//               </AccordionTrigger>
+//               <AccordionContent className="pl-6">
+//                 <Accordion
+//                   type="multiple"
+//                   className="w-full"
+//                   defaultValue={activeGroups}
+//                 >
+//                   {renderMenu(item.items)}
+//                 </Accordion>
+//               </AccordionContent>
+//             </AccordionItem>
+//           )
+//         }
+  
+//         const isActive =
+//           item.url === pathname ||
+//           (item.url !== "/" && pathname.startsWith(item.url))
+  
+//         return (
+//           <SidebarMenuItem key={item.title}>
+//             <SidebarMenuButton
+//               asChild
+//               className={`justify-start ${
+//                 isActive ? "bg-secondary" : "hover:bg-secondary"
+//               }`}
+//             >
+//               <Link href={item.url}>
+//                 <item.icon className="h-4 w-4" />
+//                 <span>{item.title}</span>
+//               </Link>
+//             </SidebarMenuButton>
+//           </SidebarMenuItem>
+//         )
+//       })
+//     }
+  
+//     if (!hasMounted) return null
+  
+//     return (
+//       <Sidebar>
+//         <SidebarContent className="flex h-full flex-col justify-between">
+//           <div>
+//             <div className="flex items-center gap-x-3 border-b-[color:var(--sidebar-border)] px-4 py-3.5">
+//               <img
+//                 src="/logo_tsat.png"
+//                 alt="TSAT Logo"
+//                 width={32}
+//                 height={32}
+//                 className="rounded-full"
+//               />
+//               <h1 className="font-semibold text-lg">Infrastructure</h1>
+//             </div>
+//             <SidebarGroup>
+//               <SidebarGroupLabel>Application</SidebarGroupLabel>
+//               <SidebarGroupContent>
+//                 <Accordion
+//                   type="multiple"
+//                   className="w-full"
+//                   defaultValue={activeGroups}
+//                 >
+//                   {renderMenu(menuItems)}
+//                 </Accordion>
+//               </SidebarGroupContent>
+//             </SidebarGroup>
+//           </div>
+  
+//           <SidebarGroup>
+//             <SidebarGroupContent>
+//               <SidebarMenu>
+//                 {isAdmin && (
+//                     <Dialog open={isVerifyOpen} onOpenChange={setIsVerifyOpen}>
+//                         <DialogTrigger asChild>
+//                             <SidebarMenuItem>
+//                                 <SidebarMenuButton className="w-full">
+//                                 <Users className="h-4 w-4" />
+//                                 <span>User Management</span>
+//                                 </SidebarMenuButton>
+//                             </SidebarMenuItem>
+//                         </DialogTrigger>
+//                         <DialogContent className="sm:max-w-[425px]">
+//                         <DialogHeader>
+//                             <DialogTitle>Password Verification</DialogTitle>
+//                             <DialogDescription>
+//                                 To access user management, please enter your current password.
+//                             </DialogDescription>
+//                         </DialogHeader>
+//                         <div className="grid gap-4 py-4">
+//                             <div className="grid grid-cols-4 items-center gap-4">
+//                             <Label htmlFor="password-verify" className="text-right">
+//                                 Password
+//                             </Label>
+//                             <Input
+//                                 id="password-verify"
+//                                 type="password"
+//                                 value={password}
+//                                 onChange={(e) => setPassword(e.target.value)}
+//                                 className="col-span-3"
+//                                 placeholder="Enter your current password"
+//                                 autoComplete="new-password"
+//                             />
+//                             </div>
+//                         </div>
+//                         <DialogFooter>
+//                             <Button onClick={handleVerifyPassword} disabled={isVerifying || !password}>
+//                             {isVerifying ? "Verifying..." : "Verify"}
+//                             </Button>
+//                         </DialogFooter>
+//                         </DialogContent>
+//                   </Dialog>
+//                 )}
+
+//                 <SidebarMenuItem>
+//                   <ThemeToggle />
+//                 </SidebarMenuItem>
+  
+//                 <AlertDialog>
+//                   <AlertDialogTrigger asChild>
+//                     <SidebarMenuItem>
+//                       <SidebarMenuButton className="w-full">
+//                         <LogOut className="h-4 w-4" />
+//                         <span>Logout</span>
+//                       </SidebarMenuButton>
+//                     </SidebarMenuItem>
+//                   </AlertDialogTrigger>
+//                   <AlertDialogContent>
+//                     <AlertDialogHeader>
+//                       <AlertDialogTitle>
+//                         Are you sure you want to log out?
+//                       </AlertDialogTitle>
+//                       <AlertDialogDescription>
+//                         You will be returned to the login page and your current
+//                         session will end.
+//                       </AlertDialogDescription>
+//                     </AlertDialogHeader>
+//                     <AlertDialogFooter>
+//                       <AlertDialogCancel>Cancel</AlertDialogCancel>
+//                       <AlertDialogAction onClick={handleLogout}>
+//                         Log Out
+//                       </AlertDialogAction>
+//                     </AlertDialogFooter>
+//                   </AlertDialogContent>
+//                 </AlertDialog>
+//               </SidebarMenu>
+//             </SidebarGroupContent>
+//           </SidebarGroup>
+//         </SidebarContent>
+//       </Sidebar>
+//     )
+//   }
 
 // "use client"
 
